@@ -79,6 +79,20 @@ input,select,textarea{width:100%;background:#12141a;color:var(--ink);border:1px 
 .actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap}
 .presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .hint{font-size:12px;color:var(--muted);margin:10px 0 0}
+dialog#dlgSet{width:min(560px,94vw);max-height:94vh;overflow-y:auto}
+dialog#dlgCard{max-height:94vh;overflow-y:auto}
+.preview{height:130px;margin-top:8px;border-radius:6px;background:#12141a center/contain no-repeat}
+.colorpicker{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.colorpicker .wheel{width:170px;height:170px;border-radius:50%;cursor:crosshair;touch-action:none;flex:none;box-shadow:0 0 0 1px var(--line)}
+.colorpicker .cside{flex:1;min-width:170px}
+.colorpicker .cside label:first-child{margin-top:0}
+.colorpicker input[type=range]{padding:0;accent-color:var(--accent)}
+.colorpicker .cHex{font-family:ui-monospace,Consolas,monospace}
+.colorpicker .cHex.bad{border-color:var(--danger)}
+.colorpicker .cnote{flex-basis:100%;margin:0}
+.sw{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.sw button{width:26px;height:26px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line);padding:0}
+[hidden]{display:none!important}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--panel);
   border:1px solid var(--line);padding:9px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
 #toast.show{opacity:1;transform:translate(-50%,0)}

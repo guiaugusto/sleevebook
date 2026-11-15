@@ -3,6 +3,8 @@ import { db, meta, exportAll, importAll, validateExport } from './store.js';
 import { createBook } from './book.js';
 import { applyTheme, DEFAULT_COLOR } from './color.js';
 import { PRESETS, sanitizeLayout, spreadForPage, slotsInGrid, totalSlots, sheetCount } from './grid.js';
+import { createColorPicker } from './wheel.js';
+import { initCardForm } from './cardform.js';
 import { $, uid, toast, downloadJSON, slug } from './util.js';
 
 const state = { album: null, slots: new Map(), cards: new Map() };
@@ -80,22 +82,64 @@ function wireSettings() {
     updateSetInfo();
   };
   ['#sRows', '#sCols', '#sPages'].forEach(s => $(s).addEventListener('input', updateSetInfo));
+  // A cor aparece no álbum enquanto você escolhe; se cancelar, volta à cor salva.
+  let draftColor = state.album?.color || DEFAULT_COLOR, saved = false;
+  const picker = createColorPicker($('#colorPicker'), {
+    onChange: hex => { draftColor = hex; applyTheme($('#book'), hex); },
+  });
   $('#btnSettings').onclick = () => {
     const a = state.album;
     $('#sName').value = a.name; $('#sRows').value = a.rows; $('#sCols').value = a.cols; $('#sPages').value = a.pages;
+    draftColor = a.color; saved = false;
+    picker.set(a.color);
     updateSetInfo();
     $('#dlgSet').showModal();
   };
+  $('#dlgSet').addEventListener('close', () => { if (!saved) applyTheme($('#book'), state.album.color); });
   $('#sCancel').onclick = () => $('#dlgSet').close();
   $('#formSet').addEventListener('submit', async e => {
     if (e.submitter?.id !== 'sSave') return;
+    saved = true;
     const layout = sanitizeLayout({ rows: $('#sRows').value, cols: $('#sCols').value, pages: $('#sPages').value });
-    state.album = { ...state.album, name: $('#sName').value.trim() || 'Meu Álbum', ...layout };
+    state.album = { ...state.album, name: $('#sName').value.trim() || 'Meu Álbum', color: draftColor, ...layout };
     await db.put('albums', state.album);
     draw();
     book.goTo(Math.min(book.spread, sheetCount(layout.pages)));
     toast('Álbum atualizado');
   });
+}
+
+/* ---------- Cadastro de carta ---------- */
+function wireCards() {
+  const form = initCardForm({
+    onSave: async (slot, card) => {
+      card.id = card.id || uid();
+      card.updatedAt = Date.now();
+      const rec = { key: slot.key, albumId: state.album.id, page: slot.page, row: slot.row, col: slot.col, cardId: card.id };
+      await db.put('cards', card);
+      await db.put('slots', rec);
+      state.cards.set(card.id, card);
+      state.slots.set(slot.key, rec);
+      book.updateSlot(slot.key);
+      updateStat();
+      toast(`${card.name} salva`);
+    },
+    onDelete: async (slot, card) => {
+      if (!card) return;
+      await db.del('cards', card.id);
+      await db.del('slots', slot.key);
+      state.cards.delete(card.id);
+      state.slots.delete(slot.key);
+      book.updateSlot(slot.key);
+      updateStat();
+      toast(`${card.name} removida`);
+    },
+  });
+  app.form = form;
+  app.onSlot = slot => {
+    const rec = state.slots.get(slot.key);
+    form.open(slot, rec && state.cards.get(rec.cardId));
+  };
 }
 
 /* ---------- Exportar / importar ---------- */
@@ -133,11 +177,11 @@ function wireBackup() {
 /* ---------- Início ---------- */
 async function main() {
   book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot) });
-  wireNav(); wireSettings(); wireBackup();
   await loadAlbum();
+  wireNav(); wireSettings(); wireCards(); wireBackup();
   draw();
 }
 
 // Pontos de extensão usados pelos próximos módulos (cadastro de carta etc.).
-export const app = { state, draw, updateStat, reload: loadAlbum, get book() { return book; }, onSlot: null };
+export const app = { state, draw, updateStat, reload: loadAlbum, get book() { return book; }, onSlot: null, form: null };
 main();

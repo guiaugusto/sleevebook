@@ -1,0 +1,39 @@
+name: Publicar no GitHub Pages
+
+# Por enquanto só roda manualmente (Actions → Publicar no GitHub Pages → Run workflow).
+# O repositório é privado e o plano gratuito não oferece Pages para repositórios privados.
+# Quando o repositório for público (ou o plano mudar) e o Pages estiver ativado com a fonte "GitHub Actions",
+# troque o gatilho para publicar a cada push na master:
+#   push:
+#     branches: [master]
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      # O site é estático e não tem build: publica só o que o app usa.
+      - name: Montar a pasta do site
+        run: |
+          mkdir _site
+          cp -r index.html manifest.webmanifest icon.svg sw.js src _site/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

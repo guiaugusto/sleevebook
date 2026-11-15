@@ -34,6 +34,7 @@ Abra `tests/index.html` pelo servidor local. A página roda todos os testes e mo
 | `stats.test.js` | Contagens e progresso por álbum e por set |
 | `share.test.js` | Link de compartilhamento: ida e volta, dados maliciosos, imagens, links inválidos |
 | `shortlink.test.js` | Worker (com KV simulado): criar, ler, apagar, limites, CORS; cliente: cifra e erros |
+| `backup.test.js` | Validação do backup importado: ids e campos maliciosos, slots, imagens, limites |
 
 Para um teste novo, crie `tests/<nome>.test.js`, use `test`, `eq` e `ok` de `tests/run.js` e inclua o nome na lista de `tests/index.html`.
 
@@ -80,7 +81,7 @@ Passo a passo completo: [`worker/README.md`](../worker/README.md). Resumo:
 - **Exportar** gera um JSON com **todos** os álbuns, cartas, slots e wishlist. Guarde-o fora do navegador (nuvem, e-mail). Recomendado antes de limpar dados do navegador, trocar de aparelho ou fazer qualquer operação arriscada.
 - **Importar** pergunta entre **Mesclar** (mantém o que existe e soma o backup; ids iguais são sobrescritos) e **Substituir** (apaga tudo e usa só o backup).
 - Para levar **um álbum** a outra pessoa, prefira o [link de compartilhamento](05-compartilhamento.md).
-- Importe apenas backups que você mesmo exportou (ver [Segurança](06-seguranca-e-privacidade.md#2-arquivos-de-backup-json-importado)).
+- O conteúdo do backup é validado na importação e o diálogo avisa quantos itens foram ignorados ([Segurança](06-seguranca-e-privacidade.md#2-arquivos-de-backup-json-importado)). Ainda assim, prefira backups que você mesmo exportou.
 
 ## Como contribuir
 

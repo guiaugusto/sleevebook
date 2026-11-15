@@ -17,7 +17,7 @@
 <script type="module">
   import { runAll } from './run.js';
   // Cada arquivo de teste registra seus casos ao ser importado. Novos arquivos entram nesta lista.
-  const files = ['color', 'grid', 'store', 'providers', 'stats', 'share', 'shortlink'];
+  const files = ['color', 'grid', 'store', 'providers', 'stats', 'share', 'shortlink', 'backup'];
   for (const f of files) await import(`./${f}.test.js`);
   await runAll();
 </script>

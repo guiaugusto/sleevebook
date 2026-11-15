@@ -56,6 +56,7 @@ docs/                      esta documentação, ADRs e mockups
 | `collection.js`, `stats.js` | Tela e cálculos da Coleção (progresso por álbum e por set) |
 | `wishlist.js` | Tela e diálogo da Wishlist |
 | `color.js`, `wheel.js` | Cor do álbum: derivação do tema e seletor (roda, hexadecimal, cores prontas) |
+| `backup.js` | Validar e limpar o conteúdo de um backup importado |
 | `share.js` | Codificar, comprimir, validar e ler links de compartilhamento |
 | `shortlink.js` | Link curto: cifrar, enviar ao Worker, buscar, decifrar, apagar |
 | `config.js` | Endereço do Worker (`SHORTLINK_API`); vazio desliga o link curto |

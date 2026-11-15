@@ -19,7 +19,7 @@ const IMAGE_HOSTS = ['assets.tcgdex.net', 'images.scrydex.com', 'images.pokemont
 const FOILS = ['holo', 'reverse', 'none'];
 
 /* ---------- Texto e imagem confiáveis ---------- */
-const text = (v, max) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max) : '');
+export const text = (v, max) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max) : '');
 
 /** Só aceita imagens https dos provedores que o app já usa. Qualquer outra coisa (data:, javascript:, outros hosts) é descartada. */
 export function safeImage(url) {

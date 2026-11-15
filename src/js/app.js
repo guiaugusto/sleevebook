@@ -432,8 +432,21 @@ async function main() {
 }
 
 // Uso offline: registra o service worker (só em http/https).
+// Quem deixa a aba aberta continua com o código antigo na memória mesmo depois de uma atualização. Por isso, quando
+// uma versão nova assume o controle, aparece um aviso com o botão "Recarregar"; e o navegador procura versão nova
+// ao voltar para a aba e de tempos em tempos.
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  const hadController = !!navigator.serviceWorker.controller;     // false na primeira instalação: sem aviso
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) $('#updateBar').hidden = false; });
+  addEventListener('load', async () => {
+    const reg = await navigator.serviceWorker.register('sw.js').catch(() => null);
+    if (!reg) return;
+    const check = () => reg.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+    setInterval(check, 30 * 60 * 1000);
+  });
+  $('#updateReload').onclick = () => location.reload();
+  $('#updateLater').onclick = () => { $('#updateBar').hidden = true; };
 }
 
 // Pontos de extensão usados pelos próximos módulos (cadastro de carta etc.).

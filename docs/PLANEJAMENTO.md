@@ -73,6 +73,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 - ✅ Painel: total de cartas, cópias, álbuns e progresso por álbum e por set ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
 - ✅ Lista e busca de toda a coleção, com filtros, ordenação e a localização de cada carta ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
 - ⏸ Valor estimado: **adiado** por decisão do usuário. Os preços saíram da interface (cadastro, busca, Coleção); o app não preenche nem mostra mais preço. Cartas antigas podem ter o campo `price` guardado, que fica sem uso ([#12](https://github.com/guiaugusto/sleevebook/issues/12))
+- ✅ Aviso "Há uma versão nova" com botão Recarregar para quem deixa a aba aberta (ADR 0001)
 - ✅ Efeito foil (versão 1): carta com versão holo brilha e inclina ao passar o mouse ou tocar; tipo pelo TCGdex ou escolhido no cadastro; liga/desliga nas configurações ([ADR 0005](adr/0005-efeito-foil.md))
 - ✅ Cartas "tenho" e "ainda quero": cada carta tem o marcador "Já tenho esta carta"; as que faltam aparecem em cinza no álbum, com contagem "faltam" e filtro na Coleção; progresso por álbum e por set conta só as que tenho
 - ✅ Wishlist com prioridade e atalho "Colocar no álbum" ([#25](https://github.com/guiaugusto/sleevebook/pull/25))

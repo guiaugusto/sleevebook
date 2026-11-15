@@ -132,15 +132,18 @@
       <div id="qResults" class="results"></div>
       <button type="button" id="qMore" hidden>Mostrar mais</button>
     </div>
+    <label class="ownedbox" for="cOwned">
+      <input type="checkbox" id="cOwned" checked>
+      <span><b>Já tenho esta carta</b><small>Desmarque para cartas que você ainda quer: elas aparecem em cinza no álbum. Cartas novas começam com a sua última escolha.</small></span>
+    </label>
     <label for="cName">Nome da carta</label><input id="cName" required maxlength="100">
     <div class="row">
       <div><label for="cSet">Coleção / set</label><input id="cSet" maxlength="80"></div>
       <div><label for="cNum">Número</label><input id="cNum" placeholder="4/102" maxlength="20"></div>
     </div>
-    <div class="row">
+    <div class="row" id="ownedFields">
       <div><label for="cCond">Condição</label><select id="cCond"></select></div>
       <div><label for="cQty">Quantidade</label><input type="number" id="cQty" min="1" value="1"></div>
-      <div><label for="cPrice">Preço (US$)</label><input type="number" id="cPrice" min="0" step="0.01" placeholder="opcional"></div>
     </div>
     <label for="cImg">Imagem (URL)</label><input id="cImg" placeholder="https://...">
     <label for="cFile">…ou enviar foto/scan</label><input type="file" id="cFile" accept="image/*">

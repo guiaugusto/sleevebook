@@ -208,3 +208,18 @@ dialog#dlgCard{max-height:94vh;overflow-y:auto}
 #stage.foil-off .slot .foil{display:none}            /* desligado nas configurações */
 #stage.foil-off .slot.foiling .card3d{transform:translateY(calc(-2*var(--u)))}
 @media (prefers-reduced-motion:reduce){.slot .foil{display:none!important}.slot.foiling .card3d{transform:translateY(calc(-2*var(--u)))!important}}
+
+/* ---- Foil: a carta inclina por inteiro, como se estivesse na mão (versão corrigida) ----
+   O slot (alvo do mouse) continua parado, mas deixa de cortar o que sai dele (overflow), e o corte arredondado passa para
+   o .card3d, que é quem se mexe. Assim a carta inteira inclina, cresce um pouco e passa por cima das vizinhas. */
+.slot.filled{overflow:visible}
+.slot.filled,.slot.noimg,.slot.missing.noimg{background:var(--pocket)}   /* a abertura do bolso fica parada atrás */
+.slot .card3d{border-radius:calc(3*var(--u));overflow:hidden;background:#1b1d27;box-shadow:0 calc(1*var(--u)) calc(4*var(--u)) #0007}
+.slot.noimg .card3d{background:linear-gradient(135deg,#3b4262,#222a45)}
+.slot.missing.noimg .card3d{background:#3b3e47}
+.slot.foiling{z-index:6}
+.slot.foiling[data-foil="holo"] .card3d,.slot.foiling[data-foil="reverse"] .card3d{
+  transform:translateY(calc(-3*var(--u))) perspective(calc(420*var(--u))) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(1.07);
+  box-shadow:0 calc(8*var(--u)) calc(16*var(--u)) #000b}
+#stage.foil-off .slot.foiling{z-index:auto}
+#stage.foil-off .slot.foiling .card3d{box-shadow:0 calc(1*var(--u)) calc(4*var(--u)) #0007}

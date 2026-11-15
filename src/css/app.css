@@ -201,7 +201,7 @@ dialog#dlgCard{max-height:94vh;overflow-y:auto}
   -webkit-mask-size:100% 100%,84% 39%;mask-size:100% 100%,84% 39%;
   -webkit-mask-position:0 0,8% 11%;mask-position:0 0,8% 11%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .slot.foiling .foil{opacity:.42}
-.slot.foiling[data-foil="holo"] .card3d,.slot.foiling[data-foil="reverse"] .card3d{
+.slot.filled.foiling[data-page][data-foil="holo"] .card3d,.slot.filled.foiling[data-page][data-foil="reverse"] .card3d{
   transform:translateY(calc(-2*var(--u))) perspective(calc(420*var(--u))) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .06s linear}
 .slot::after{z-index:3}
 .slot.missing .foil{display:none}                    /* carta que ainda não tenho: cinza, sem foil */
@@ -218,8 +218,8 @@ dialog#dlgCard{max-height:94vh;overflow-y:auto}
 .slot.noimg .card3d{background:linear-gradient(135deg,#3b4262,#222a45)}
 .slot.missing.noimg .card3d{background:#3b3e47}
 .slot.foiling{z-index:6}
-.slot.foiling[data-foil="holo"] .card3d,.slot.foiling[data-foil="reverse"] .card3d{
-  transform:translateY(calc(-3*var(--u))) perspective(calc(420*var(--u))) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(1.07);
+.slot.filled.foiling[data-page][data-foil="holo"] .card3d,.slot.filled.foiling[data-page][data-foil="reverse"] .card3d{
+  transform:translateY(calc(-2*var(--u))) perspective(calc(420*var(--u))) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
   box-shadow:0 calc(8*var(--u)) calc(16*var(--u)) #000b}
 #stage.foil-off .slot.foiling{z-index:auto}
 #stage.foil-off .slot.foiling .card3d{box-shadow:0 calc(1*var(--u)) calc(4*var(--u)) #0007}

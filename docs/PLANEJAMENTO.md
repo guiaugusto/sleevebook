@@ -15,7 +15,7 @@ Um álbum digital para catalogar coleções de cartas TCG, no formato de um álb
 | v0.1 · MVP | ✅ pronto |
 | v0.2 · Cartas de verdade | ✅ pronto |
 | v0.3 · Coleção e dados | ✅ pronto |
-| v1.0 · PWA e deploy | 🟡 PWA implementado (offline por confirmar); deploy preparado, mas manual |
+| v1.0 · PWA e deploy | ✅ no ar em https://guiaugusto.github.io/sleevebook/ (offline em si por confirmar) |
 | v1.0 · Itens que dependem de backend | ⬜ não iniciados (conta, sincronização, link público, scanner) |
 
 ## Decisões técnicas
@@ -34,7 +34,7 @@ Um álbum digital para catalogar coleções de cartas TCG, no formato de um álb
 - **Sem Vite/TypeScript**: não há Node na máquina de desenvolvimento, então o projeto é JavaScript puro com módulos ES (ADR 0001). Pode ganhar um build depois sem reescrita.
 - **Sem Dexie**: a camada de IndexedDB é própria e pequena (`src/js/store.js`).
 - **Pokémon com reserva**: a Pokémon TCG API oscilou durante os testes; há fallback para o TCGdex (ADR 0004).
-- **Deploy manual**: o GitHub Pages não está disponível para repositório privado no plano gratuito. O workflow existe, mas só roda manualmente.
+- **Deploy**: o GitHub Pages não estava disponível com o repositório privado no plano gratuito. Depois que o repositório virou público, o Pages foi ativado e o workflow passou a publicar a cada push na `master` ([#31](https://github.com/guiaugusto/sleevebook/pull/31)).
 
 ## Modelo de dados
 
@@ -75,8 +75,8 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ### v1.0+
 
-- 🟡 App instalável (PWA) e uso offline ([#26](https://github.com/guiaugusto/sleevebook/pull/26)): manifesto, ícone e service worker prontos; o registro do service worker **não pôde ser testado** no navegador embutido do app, então o uso offline precisa ser confirmado num Chrome normal.
-- 🟡 Deploy no GitHub Pages ([#26](https://github.com/guiaugusto/sleevebook/pull/26)): workflow pronto, só manual (ver README).
+- ✅ App instalável (PWA) ([#26](https://github.com/guiaugusto/sleevebook/pull/26)): manifesto, ícone e service worker. No site publicado o service worker registrou (`activated`) e guardou os 21 arquivos do app. Falta só **abrir o app sem internet** para confirmar o uso offline de ponta a ponta (a issue [#14](https://github.com/guiaugusto/sleevebook/issues/14) segue aberta por isso).
+- ✅ Deploy no GitHub Pages ([#26](https://github.com/guiaugusto/sleevebook/pull/26), [#31](https://github.com/guiaugusto/sleevebook/pull/31)): https://guiaugusto.github.io/sleevebook/, publicado a cada push na `master`.
 - ⬜ Login e sincronização entre dispositivos ([#16](https://github.com/guiaugusto/sleevebook/issues/16)): exige backend.
 - ⬜ Link público para mostrar o álbum ([#17](https://github.com/guiaugusto/sleevebook/issues/17)): exige backend.
 - ⬜ Scanner de carta pela câmera ([#18](https://github.com/guiaugusto/sleevebook/issues/18)): exige reconhecimento de imagem.
@@ -96,7 +96,8 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 - 45 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
 - Telas testadas manualmente no navegador embutido do app: álbum, virar páginas, mudar grade, escolher cor, cadastrar e buscar carta, vários álbuns, arrastar (com eventos de arrastar simulados), Coleção e Wishlist.
 - Chamadas reais às APIs de Scryfall, YGOPRODeck, TCGdex e Pokémon TCG.
-- **Não verificado**: registro do service worker e uso offline; arrastar com o mouse de verdade; teste em celular físico.
+- No site publicado: página carrega, service worker ativo, 21 arquivos em cache, sem erros no console.
+- **Não verificado**: abrir o app sem internet; arrastar com o mouse de verdade; teste em celular físico.
 
 ## Organização do trabalho
 

@@ -27,3 +27,9 @@ Queremos que as cartas com versão holo tenham um brilho parecido com o da carta
 - **Causa**: o próprio slot (quem recebe o mouse) era inclinado e levantado com `transform`. Com o slot inclinado, a área que responde ao mouse se desloca sob o ponteiro e o mouse "sai" da carta; ao sair, o efeito desliga, a carta volta ao lugar e o mouse "entra" de novo. Medi: com a inclinação máxima, 80 de 81 pontos dentro de uma carta da direita deixavam de acertar o slot; na esquerda (página no verso da folha, espelhada) nenhum falhava.
 - **Correção**: o slot fica **parado** e é o único alvo do mouse. A imagem, o rótulo e as camadas de brilho ficam num `.card3d` interno com `pointer-events: none`, e só ele inclina e levanta (inclusive o "levantar" ao passar o mouse, que também deslocava a área). O brilho virou um elemento `.foil` dentro do `.card3d`, no lugar do `::before` do slot.
 - **Regra para o futuro**: nunca aplicar `transform` ao elemento que decide o `hover`/`pointermove`; aplicar a um filho sem eventos.
+
+## Atualização 2 (2026-11-15): a carta volta a inclinar "como na mão"
+
+- A correção do piscar (acima) teve um efeito colateral que eu não tinha percebido: a carta passou a inclinar **dentro** do slot, que cortava tudo que saía dele (`overflow: hidden`). Por isso a carta parecia quase parada, sem o movimento de "segurar a carta na mão" que existia antes.
+- **Correção**: o slot (alvo do mouse, parado) deixou de cortar (`overflow: visible`) e o corte arredondado foi para o `.card3d`, que se mexe sozinho. Enquanto a carta brilha ela inclina por inteiro (até 14°), cresce 7%, levanta e ganha uma sombra maior, e o slot sobe de camada (`z-index`) para a carta passar por cima das vizinhas. A abertura do bolso continua parada atrás.
+- Os fundos de "carta sem imagem" e "ainda não tenho" também foram para o `.card3d`, para acompanharem o movimento.

@@ -33,9 +33,22 @@ O app monta telas com `innerHTML` a partir de dados (nomes de cartas, sets, nota
 
 ### 2. Arquivos de backup (JSON importado)
 
-A importação **valida só a estrutura** (`app`, `version`, listas de álbuns, cartas e slots), **não o conteúdo**. Isso significa que um backup de origem desconhecida pode trazer textos longos, ids e URLs de imagem arbitrários. Mitigações atuais: escape na saída (item 1) e o fato de a importação ser uma ação explícita do usuário, com escolha entre mesclar e substituir.
+Um arquivo de backup pode vir de qualquer pessoa, então o conteúdo é validado ([ADR 0010](adr/0010-validar-backup-na-importacao.md)) depois de a estrutura ser conferida e antes de qualquer gravação (`src/js/backup.js`):
 
-**Recomendação (não implementada)**: normalizar o backup na importação como já é feito com links (limites de texto, tipos numéricos, ids no formato esperado, imagens só de hosts conhecidos). Regra prática: **importe apenas backups que você mesmo exportou**.
+| Proteção | Como |
+|---|---|
+| Tamanho do arquivo | Acima de 60 MB é recusado antes de ser lido |
+| Quantidade | No máximo 500 álbuns, 100 mil cartas, 100 mil slots e 20 mil itens de wishlist; o excedente é cortado |
+| Ids | Só letras, números, `_` e `-` (1 a 80); registro com id inválido é ignorado |
+| Campos | Lista de campos permitidos; os desconhecidos são descartados |
+| Textos e números | Limites de tamanho e de valor; o que foge do esperado volta ao padrão |
+| Listas fechadas | Jogo, fonte, condição, foil e idioma precisam existir |
+| Slots | Chave refeita a partir dos números; precisa apontar para álbum e carta do backup; posição inteira e dentro dos limites; duplicados descartados |
+| Imagens | Foto enviada (`data:image/…;base64`, até 2 MB) ou `http(s)` de até 2000 caracteres, de qualquer site; `javascript:`, `data:text/html`, SVG e outros esquemas são descartados |
+
+O diálogo de importação mostra quantos itens foram ignorados, e o que é ignorado não é gravado. Um backup exportado pelo próprio app passa sem perda e sem aviso. Como a importação continua sendo uma ação explícita, com escolha entre Mesclar e Substituir, e o escape na saída (item 1) segue como primeira linha de defesa, esta validação é a segunda.
+
+Limite assumido: imagens por URL aceitam qualquer site, então abrir um backup alheio pode fazer o navegador carregar imagens de hosts que você não conhece (revelando o seu IP a eles). Prefira backups que você mesmo exportou.
 
 ### 3. Links de compartilhamento (conteúdo de terceiros)
 
@@ -102,8 +115,7 @@ O IndexedDB **não é cifrado**: quem tiver acesso ao navegador do usuário (por
 | Item | Risco | Ideia |
 |---|---|---|
 | **Sem Content Security Policy** | Defesa em profundidade contra XSS ausente | Adicionar uma CSP por `<meta>` (o GitHub Pages não permite cabeçalhos): `script-src 'self'`, `connect-src` só para as APIs e o Worker, `img-src` para os CDNs. O `index.html` não tem script inline, então é viável; os estilos inline exigem `'unsafe-inline'` em `style-src` |
-| **Backup sem validação de conteúdo** | Texto/URL arbitrário importado | Normalizar na importação, reusando as regras de `share.js` |
-| **Imagens por URL digitada** | Aceita qualquer endereço (revela o IP do usuário ao host da imagem) | É escolha do próprio usuário; aceitável, mas vale um aviso |
+| **Imagens por URL (digitada ou de um backup)** | Aceita qualquer site (revela o IP do usuário ao host da imagem) | É escolha do próprio usuário; para backups alheios, vale um aviso ou uma opção de bloquear imagens externas |
 | **Sem limite por pessoa no Worker** | Um abusador esgota a cota diária | Cloudflare Rate Limiting ou um contador por IP (custa gravações) |
 | **Dados locais sem cifra** | Acesso físico ao navegador | Opção de senha/cifra local, se um dia houver demanda |
 | **Endereço do Worker público** | Qualquer script pode tentar criar links | É inerente a um site estático; os tetos limitam o impacto |

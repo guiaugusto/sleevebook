@@ -95,7 +95,8 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 ## Limitações conhecidas
 
 - **Celular**: em telas estreitas o livro mostra uma página por vez (botões, deslizar) e a carta pode ser movida pelo botão "Mover…" do cadastro. Foi testado só em janela estreita no computador, não em celular físico. O arrastar com o mouse continua sendo o jeito direto no computador.
-- **Backup importado**: a importação valida só a estrutura do arquivo, não o conteúdo; importe apenas backups que você mesmo exportou ([segurança](06-seguranca-e-privacidade.md#2-arquivos-de-backup-json-importado)).
+- **Backup importado**: o conteúdo é validado e o que for inválido é ignorado, com aviso ([ADR 0010](adr/0010-validar-backup-na-importacao.md)). Imagens por URL de um backup podem ser de qualquer site.
+
 - **Dados só no navegador**: limpar os dados do site apaga o álbum. Use **Exportar** para backup.
 - **Páginas ímpares**: a última tela do livro mostra o verso em branco da última folha.
 - **Preços**: vêm em dólar (TCGplayer), são aproximados e nem toda carta tem preço.
@@ -104,7 +105,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ## Como foi verificado
 
-- 99 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores, estatísticas e compartilhamento por link.
+- 107 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores, estatísticas, compartilhamento por link, link curto e validação de backup.
 - Telas testadas manualmente no navegador embutido do app: álbum, virar páginas, mudar grade, escolher cor, cadastrar e buscar carta, vários álbuns, arrastar (com eventos de arrastar simulados), Coleção e Wishlist.
 - Chamadas reais às APIs de Scryfall, YGOPRODeck, TCGdex e Pokémon TCG.
 - No site publicado: página carrega, service worker ativo, 21 arquivos em cache, sem erros no console.

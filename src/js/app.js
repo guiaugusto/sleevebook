@@ -11,6 +11,7 @@ import { fetchFoil } from './providers/tcgdex.js';
 import { renderLibrary, flyCover, fadeZoom, coverMetrics } from './library.js';
 import { GAMES } from './providers/index.js';
 import { buildShareLink, readShareLink, shareFromHash, SAFE_LINK_LENGTH } from './share.js';
+import { sanitizeBackup, BACKUP_LIMITS } from './backup.js';
 import { SHORTLINK_API } from './config.js';
 import { createShortLink, readShortLink, deleteShortLink, isShortHash, ShortLinkError } from './shortlink.js';
 import { renderCollection } from './collection.js';
@@ -537,11 +538,15 @@ function wireBackup() {
     const file = e.target.files[0];
     e.target.value = '';
     if (!file) return;
+    if (file.size > BACKUP_LIMITS.fileBytes) { toast('Este arquivo é grande demais para ser um backup do Sleevebook.'); return; }
+    let ignored = 0;
     try {
-      pending = JSON.parse(await file.text());
-      validateExport(pending);
+      const raw = JSON.parse(await file.text());
+      validateExport(raw);
+      ({ data: pending, ignored } = sanitizeBackup(raw));     // limpa o conteúdo: o arquivo pode ter vindo de qualquer pessoa
     } catch (err) { toast(err instanceof SyntaxError ? 'Arquivo inválido.' : err.message); return; }
-    $('#impInfo').textContent = `${pending.albums.length} álbum(ns), ${pending.cards.length} carta(s).`;
+    $('#impInfo').textContent = `${pending.albums.length} álbum(ns), ${pending.cards.length} carta(s).` +
+      (ignored ? ` ${ignored} item(ns) com dados inválidos serão ignorados.` : '');
     $('#dlgImport').showModal();
   };
   const finish = async mode => {

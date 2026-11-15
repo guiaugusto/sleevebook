@@ -15,6 +15,7 @@ Cada decisão relevante tem um registro curto em [`docs/adr`](adr) (contexto, de
 | Biblioteca como tela inicial | Prateleira de fichários com animação de aproximar | [ADR 0007](adr/0007-biblioteca-de-ficharios.md) |
 | Compartilhar por link | Álbum comprimido no fragmento da URL; visualização antes de adicionar | [ADR 0008](adr/0008-compartilhar-por-link.md) |
 | Link curto com Worker opcional | Cifrado no navegador; limites configuráveis | [ADR 0009](adr/0009-link-curto-com-worker.md) |
+| Validar o backup na importação | Lista de campos permitidos, limites e imagens só http(s) ou fotos; avisa o que foi ignorado | [ADR 0010](adr/0010-validar-backup-na-importacao.md) |
 
 ## Por quê, e o que foi descartado
 

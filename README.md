@@ -9,6 +9,7 @@
 Acompanhe o que já está pronto no [roadmap](docs/PLANEJAMENTO.md#roadmap).
 
 - Biblioteca de fichários na tela inicial; clicar em um aproxima a capa e abre o álbum
+- Compartilhar um álbum por link (🔗 Compartilhar) e importar abrindo o link, sem servidor ([ADR 0008](docs/adr/0008-compartilhar-por-link.md))
 - Álbum com grade e número de folhas (frente e verso) configuráveis, com presets de fichários do mercado
 - Visual de fichário: começa fechado, abre com a capa de dentro à esquerda e a página 1 à direita; páginas que viram (botões, teclado e deslize no celular)
 - Cor do álbum por roda de cores ou hexadecimal, com papel, bolsos e texto adaptados

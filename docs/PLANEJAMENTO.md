@@ -73,6 +73,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 - ✅ Painel: total de cartas, cópias, álbuns e progresso por álbum e por set ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
 - ✅ Lista e busca de toda a coleção, com filtros, ordenação e a localização de cada carta ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
 - ⏸ Valor estimado: **adiado** por decisão do usuário. Os preços saíram da interface (cadastro, busca, Coleção); o app não preenche nem mostra mais preço. Cartas antigas podem ter o campo `price` guardado, que fica sem uso ([#12](https://github.com/guiaugusto/sleevebook/issues/12))
+- ✅ Compartilhar álbum por link: o álbum vira um código comprimido no fragmento da URL e é importado como álbum novo, com validação do conteúdo ([ADR 0008](adr/0008-compartilhar-por-link.md))
 - ✅ Biblioteca de fichários como tela inicial: todos os álbuns em pé numa prateleira, com animação de aproximar ao abrir e de afastar ao voltar ([ADR 0007](adr/0007-biblioteca-de-ficharios.md))
 - ✅ Tamanho do álbum em folhas (frente e verso) com presets de fichários do mercado: 4, 9 e 12 bolsos, até 40 folhas ([ADR 0006](adr/0006-folhas-e-ficharios.md))
 - ✅ Cadastro da carta em janela larga no computador (busca à esquerda, dados e prévia à direita) e em tela cheia com abas no celular; o foco vai para a busca ao abrir
@@ -101,7 +102,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ## Como foi verificado
 
-- 79 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
+- 89 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores, estatísticas e compartilhamento por link.
 - Telas testadas manualmente no navegador embutido do app: álbum, virar páginas, mudar grade, escolher cor, cadastrar e buscar carta, vários álbuns, arrastar (com eventos de arrastar simulados), Coleção e Wishlist.
 - Chamadas reais às APIs de Scryfall, YGOPRODeck, TCGdex e Pokémon TCG.
 - No site publicado: página carrega, service worker ativo, 21 arquivos em cache, sem erros no console.

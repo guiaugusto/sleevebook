@@ -2,7 +2,7 @@
 import { db, meta, exportAll, importAll, validateExport } from './store.js';
 import { createBook } from './book.js';
 import { applyTheme, DEFAULT_COLOR, SWATCHES as SWATCH_CYCLE } from './color.js';
-import { PRESETS, sanitizeLayout, spreadForPage, slotsInGrid, totalSlots, sheetCount } from './grid.js';
+import { PRESETS, sanitizeLayout, spreadForPage, slotsInGrid, totalSlots, sheetCount, parseSlotKey } from './grid.js';
 import { createColorPicker } from './wheel.js';
 import { initCardForm } from './cardform.js';
 import { initSearch } from './search.js';
@@ -190,6 +190,28 @@ function wireCards() {
   };
 }
 
+/** Move a carta de `from` para `to`; se `to` já tem carta, as duas trocam de lugar. */
+export async function moveCard(from, to) {
+  const a = state.slots.get(from), b = state.slots.get(to);
+  if (!a || from === to) return;
+  const at = (key, cardId) => ({ key, albumId: state.album.id, ...parseSlotKey(key), cardId });
+  const toRec = at(to, a.cardId);
+  if (b) {
+    const fromRec = at(from, b.cardId);
+    await db.putMany('slots', [toRec, fromRec]);
+    state.slots.set(from, fromRec);
+  } else {
+    await db.putMany('slots', [toRec]);
+    await db.del('slots', from);
+    state.slots.delete(from);
+  }
+  state.slots.set(to, toRec);
+  book.updateSlot(from);
+  book.updateSlot(to);
+  updateStat();
+  toast(b ? 'Cartas trocadas de lugar' : 'Carta movida');
+}
+
 /* ---------- Exportar / importar ---------- */
 function wireBackup() {
   $('#btnExport').onclick = async () => {
@@ -224,7 +246,7 @@ function wireBackup() {
 
 /* ---------- Início ---------- */
 async function main() {
-  book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot) });
+  book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot), onMove: moveCard });
   await loadAlbum();
   wireNav(); wireAlbums(); wireSettings(); wireCards(); wireBackup();
   draw();

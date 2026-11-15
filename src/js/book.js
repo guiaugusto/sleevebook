@@ -1,6 +1,6 @@
 // Visual de livro: folhas com frente e verso que viram em 3D.
 // Cada folha tem duas páginas (1/2, 3/4…). Virar = girar 180° em torno da lombada.
-import { sheetCount, slotKey, visiblePages } from './grid.js';
+import { sheetCount, slotKey, visiblePages, countByPage } from './grid.js';
 import { esc } from './util.js';
 
 const FLIP_MS = 800;
@@ -24,7 +24,7 @@ export function createBook(stage, handlers = {}) {
     const attrs = `data-key="${esc(key)}" data-page="${page}" data-row="${row}" data-col="${col}" role="button" tabindex="0"`;
     if (!card) return `<div class="slot" ${attrs} aria-label="Slot ${idx} vazio"><span class="n">${idx}</span><span class="plus">+</span></div>`;
     const sub = [card.set, card.number].filter(Boolean).join(' ');
-    return `<div class="slot filled ${card.image ? '' : 'noimg'}" ${attrs} aria-label="${esc(card.name)}">
+    return `<div class="slot filled ${card.image ? '' : 'noimg'}" ${attrs} draggable="true" aria-label="${esc(card.name)}">
       ${card.image ? `<img src="${esc(card.image)}" alt="" loading="lazy" draggable="false">` : ''}
       <div class="label"><b>${esc(card.name)}</b>${sub ? `<span>${esc(sub)}</span>` : ''}</div>
       ${card.qty > 1 ? `<span class="qty">×${card.qty}</span>` : ''}<div class="shine"></div></div>`;
@@ -34,7 +34,8 @@ export function createBook(stage, handlers = {}) {
     const { album } = data;
     let slots = '';
     for (let r = 0; r < album.rows; r++) for (let c = 0; c < album.cols; c++) slots += slotHTML(album, page, r, c);
-    return `<div class="ph"><span>${esc(album.name)}</span><span>Pág. ${page}</span></div>
+    const n = countByPage(album, [...data.slots.values()])[page] || 0;
+    return `<div class="ph"><span>${esc(album.name)}</span><span>Pág. ${page} · <b class="pc" data-pc="${page}">${n}/${album.rows * album.cols}</b></span></div>
       <div class="grid" style="grid-template-columns:repeat(${album.cols},calc(63*var(--u)))">${slots}</div>`;
   }
 
@@ -86,12 +87,19 @@ export function createBook(stage, handlers = {}) {
     notify();
   }
 
-  /** Redesenha só o slot indicado (sem refazer o livro inteiro). */
+  /** Redesenha só o slot indicado (sem refazer o livro inteiro) e atualiza a contagem das páginas. */
   function updateSlot(key) {
     if (!data) return;
     for (const s of el.querySelectorAll('.slot[data-key]')) {
       if (s.dataset.key === key) s.outerHTML = slotHTML(data.album, +s.dataset.page, +s.dataset.row, +s.dataset.col);
     }
+    refreshCounts();
+  }
+
+  /** Contagem "cartas/slots" de cada página (frente e verso contam separado). */
+  function refreshCounts() {
+    const counts = countByPage(data.album, [...data.slots.values()]), per = data.album.rows * data.album.cols;
+    for (const b of el.querySelectorAll('.pc')) b.textContent = `${counts[b.dataset.pc] || 0}/${per}`;
   }
 
   function notify() { handlers.onSpread?.(spread, visiblePages(spread, data.album.pages), total()); }
@@ -134,6 +142,49 @@ export function createBook(stage, handlers = {}) {
     const r = s.getBoundingClientRect();
     s.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
     s.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+  });
+
+  /* ---------- Arrastar e soltar cartas ---------- */
+  let dragKey = null, edgeTimer = null, edgeDir = 0;
+  const stopEdge = () => { clearInterval(edgeTimer); edgeTimer = null; edgeDir = 0; };
+  const clearOver = () => el.querySelectorAll('.over,.dragging').forEach(n => n.classList.remove('over', 'dragging'));
+
+  el.addEventListener('dragstart', e => {
+    const s = e.target.closest?.('.slot.filled');
+    if (!s) return;
+    dragKey = s.dataset.key;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', dragKey);
+    s.classList.add('dragging');
+  });
+  el.addEventListener('dragover', e => {
+    const s = e.target.closest?.('.slot[data-key]');
+    if (!dragKey || !s) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    el.querySelectorAll('.over').forEach(n => n !== s && n.classList.remove('over'));
+    s.classList.add('over');
+  });
+  el.addEventListener('drop', e => {
+    const s = e.target.closest?.('.slot[data-key]');
+    if (!dragKey || !s) return;
+    e.preventDefault();
+    const from = dragKey;
+    dragKey = null; stopEdge(); clearOver();
+    if (from !== s.dataset.key) handlers.onMove?.(from, s.dataset.key);
+  });
+  addEventListener('dragend', () => { dragKey = null; stopEdge(); clearOver(); });
+
+  // Arrastando perto da borda do palco, as folhas viram sozinhas para levar a carta a outra página.
+  stage.addEventListener('dragover', e => {
+    if (!dragKey) return;
+    const r = stage.getBoundingClientRect(), edge = Math.min(90, r.width * 0.12);
+    const dir = e.clientX < r.left + edge ? -1 : e.clientX > r.right - edge ? 1 : 0;
+    if (dir === edgeDir) return;
+    stopEdge();
+    if (!dir) return;
+    edgeDir = dir;
+    edgeTimer = setInterval(() => goTo(spread + dir), 900);
   });
 
   let startX = null;

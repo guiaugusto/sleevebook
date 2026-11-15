@@ -11,6 +11,8 @@ import { fetchFoil } from './providers/tcgdex.js';
 import { renderLibrary, flyCover, fadeZoom, coverMetrics } from './library.js';
 import { GAMES } from './providers/index.js';
 import { buildShareLink, readShareLink, shareFromHash, SAFE_LINK_LENGTH } from './share.js';
+import { SHORTLINK_API } from './config.js';
+import { createShortLink, readShortLink, deleteShortLink, isShortHash, ShortLinkError } from './shortlink.js';
 import { renderCollection } from './collection.js';
 import { renderWishlist, initWishlistDialog } from './wishlist.js';
 import { firstEmptySlot } from './grid.js';
@@ -496,10 +498,13 @@ function wireBackup() {
 
 /* ---------- Compartilhar por link ---------- */
 function wireShare() {
-  let link = '';
+  let link = '', shortId = null;
+  const base = () => location.origin + location.pathname;
+  const sync = () => { $('#shDelShort').hidden = !shortId; };
   const refresh = async () => {
     const slots = [...state.slots.values()];
-    link = await buildShareLink(location.origin + location.pathname, state.album, slots, [...state.cards.values()], { includeNotes: $('#shNotes').checked });
+    link = await buildShareLink(base(), state.album, slots, [...state.cards.values()], { includeNotes: $('#shNotes').checked });
+    shortId = null; sync();
     $('#shLink').value = link;
     const kb = (link.length / 1000).toFixed(1).replace('.', ',');
     $('#shHint').textContent = link.length > SAFE_LINK_LENGTH
@@ -511,6 +516,7 @@ function wireShare() {
     $('#shInfo').textContent = `"${state.album.name}": ${n} ${n === 1 ? 'carta' : 'cartas'}. Fotos que você enviou não vão no link; as imagens das cartas buscadas vão pelo endereço delas.`;
     $('#shNotes').checked = false;
     $('#shNative').hidden = !navigator.share;
+    $('#shShort').hidden = !SHORTLINK_API;
     await refresh();
     $('#dlgShare').showModal();
   };
@@ -522,6 +528,20 @@ function wireShare() {
   };
   $('#shNative').onclick = () => navigator.share({ title: state.album.name, text: `Álbum "${state.album.name}" no Sleevebook`, url: link }).catch(() => {});
   $('#shLink').onfocus = e => e.target.select();
+  $('#shShort').onclick = async () => {
+    $('#shShort').disabled = true;
+    try {
+      const made = await createShortLink(SHORTLINK_API, base(), state.album, [...state.slots.values()], [...state.cards.values()], { includeNotes: $('#shNotes').checked });
+      link = made.link; shortId = made.id; sync();
+      $('#shLink').value = link;
+      $('#shHint').textContent = 'Link curto (vale por cerca de 90 dias). O álbum fica guardado cifrado e só abre com este link completo. Você pode apagá-lo quando quiser.';
+    } catch (err) { toast(err instanceof ShortLinkError ? err.message : 'Não foi possível gerar o link curto.'); }
+    $('#shShort').disabled = false;
+  };
+  $('#shDelShort').onclick = async () => {
+    try { await deleteShortLink(SHORTLINK_API, shortId); toast('Link curto apagado'); await refresh(); }
+    catch (err) { toast(err.message); }
+  };
 
   // Receber: o link abre o app com o álbum no fragmento. Mostra o que chegou e só importa se a pessoa aceitar.
   let incoming = null;
@@ -538,9 +558,13 @@ function wireShare() {
     toast(`"${got.album.name}" adicionado à biblioteca`);
   };
   return async hash => {
-    if (!shareFromHash(hash)) return;
+    const short = isShortHash(hash);
+    if (!short && !shareFromHash(hash)) return;
     history.replaceState(null, '', location.pathname);       // o link não fica no histórico nem é reaberto ao recarregar
-    try { incoming = await readShareLink(hash); } catch (err) { toast(err.message); return; }
+    try {
+      if (short && !SHORTLINK_API) throw new Error('Este link curto precisa do serviço de links curtos, que não está ligado neste site.');
+      incoming = short ? await readShortLink(SHORTLINK_API, hash) : await readShareLink(hash);
+    } catch (err) { toast(err.message); return; }
     const { album, cards } = incoming, sheets = pagesToSheets(album.pages);
     $('#rcInfo').textContent = `"${album.name}": ${cards.length} ${cards.length === 1 ? 'carta' : 'cartas'}, fichário de ${album.cols}×${album.rows} bolsos com ${sheets} folhas.`;
     $('#dlgReceive').showModal();

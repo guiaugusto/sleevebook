@@ -10,6 +10,7 @@ import { repairImage } from './providers/images.js';
 import { fetchFoil } from './providers/tcgdex.js';
 import { renderLibrary, flyCover, fadeZoom, coverMetrics } from './library.js';
 import { GAMES } from './providers/index.js';
+import { buildShareLink, readShareLink, shareFromHash, SAFE_LINK_LENGTH } from './share.js';
 import { renderCollection } from './collection.js';
 import { renderWishlist, initWishlistDialog } from './wishlist.js';
 import { firstEmptySlot } from './grid.js';
@@ -493,15 +494,72 @@ function wireBackup() {
   $('#impCancel').onclick = () => { pending = null; $('#dlgImport').close(); };
 }
 
+/* ---------- Compartilhar por link ---------- */
+function wireShare() {
+  let link = '';
+  const refresh = async () => {
+    const slots = [...state.slots.values()];
+    link = await buildShareLink(location.origin + location.pathname, state.album, slots, [...state.cards.values()], { includeNotes: $('#shNotes').checked });
+    $('#shLink').value = link;
+    const kb = (link.length / 1000).toFixed(1).replace('.', ',');
+    $('#shHint').textContent = link.length > SAFE_LINK_LENGTH
+      ? `Link grande (${kb} mil caracteres): apps de mensagem podem cortá-lo. Se o destinatário não conseguir abrir, envie o arquivo de backup (botão Exportar).`
+      : `Link de ${kb} mil caracteres. Quem tiver o link vê o álbum inteiro; ele não pode ser cancelado depois de enviado.`;
+  };
+  $('#btnShare').onclick = async () => {
+    const n = slotsInGrid(state.album, [...state.slots.values()]).length;
+    $('#shInfo').textContent = `"${state.album.name}": ${n} ${n === 1 ? 'carta' : 'cartas'}. Fotos que você enviou não vão no link; as imagens das cartas buscadas vão pelo endereço delas.`;
+    $('#shNotes').checked = false;
+    $('#shNative').hidden = !navigator.share;
+    await refresh();
+    $('#dlgShare').showModal();
+  };
+  $('#shNotes').onchange = refresh;
+  $('#shClose').onclick = () => $('#dlgShare').close();
+  $('#shCopy').onclick = async () => {
+    try { await navigator.clipboard.writeText(link); toast('Link copiado'); }
+    catch { $('#shLink').select(); toast('Selecione o link e copie (Ctrl+C)'); }
+  };
+  $('#shNative').onclick = () => navigator.share({ title: state.album.name, text: `Álbum "${state.album.name}" no Sleevebook`, url: link }).catch(() => {});
+  $('#shLink').onfocus = e => e.target.select();
+
+  // Receber: o link abre o app com o álbum no fragmento. Mostra o que chegou e só importa se a pessoa aceitar.
+  let incoming = null;
+  const close = () => { incoming = null; $('#dlgReceive').close(); };
+  $('#rcCancel').onclick = close;
+  $('#rcImport').onclick = async () => {
+    const got = incoming;
+    close();
+    await db.put('albums', got.album);
+    await db.putMany('cards', got.cards);
+    await db.putMany('slots', got.slots);
+    await switchAlbum(got.album.id);
+    await showView('album');
+    toast(`"${got.album.name}" adicionado à biblioteca`);
+  };
+  return async hash => {
+    if (!shareFromHash(hash)) return;
+    history.replaceState(null, '', location.pathname);       // o link não fica no histórico nem é reaberto ao recarregar
+    try { incoming = await readShareLink(hash); } catch (err) { toast(err.message); return; }
+    const { album, cards } = incoming, sheets = pagesToSheets(album.pages);
+    $('#rcInfo').textContent = `"${album.name}": ${cards.length} ${cards.length === 1 ? 'carta' : 'cartas'}, fichário de ${album.cols}×${album.rows} bolsos com ${sheets} folhas.`;
+    $('#dlgReceive').showModal();
+  };
+}
+
 /* ---------- Início ---------- */
 async function main() {
+  const arrivedWith = location.hash;                  // um link compartilhado chega no fragmento; lemos antes de a navegação limpá-lo
   book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot), onMove: moveCard, onBrokenImage: repairSlotImage, onFoilNeeded: detectFoil });
   setFoilEnabled(foilEnabled());
   await loadAlbum();
   wireNav(); wireAlbums(); wireSettings(); wireCards(); wireBackup(); wireViews();
+  const receive = wireShare();
   draw();
   const start = Object.entries(VIEWS).find(([, h]) => h && h === location.hash)?.[0] ?? 'library';
   await showView(start);
+  receive(arrivedWith);
+  addEventListener('hashchange', () => receive(location.hash));   // colar um link com o app já aberto na mesma aba
 }
 
 // Uso offline: registra o service worker (só em http/https).

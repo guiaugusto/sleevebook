@@ -20,6 +20,7 @@
   <span class="tools" id="albumTools">
     <button id="btnLibrary" type="button" title="Voltar para a biblioteca (Esc)">← Biblioteca</button>
     <span class="stat" id="stat"></span>
+    <button id="btnShare" type="button" title="Gerar um link para compartilhar este álbum">🔗 Compartilhar</button>
     <button id="btnSettings" type="button">⚙ Configurar</button>
   </span>
   <button id="btnExport" type="button">Exportar</button>
@@ -196,6 +197,39 @@
       <button type="button" id="cCancel">Cancelar</button>
       <button class="primary" id="cSave" value="save">Salvar</button>
     </footer>
+  </form>
+</dialog>
+
+<!-- Compartilhar álbum por link -->
+<dialog id="dlgShare">
+  <form method="dialog">
+    <h2>Compartilhar álbum</h2>
+    <p id="shInfo"></p>
+    <label class="ownedbox" for="shNotes">
+      <input type="checkbox" id="shNotes">
+      <span><b>Incluir minhas notas</b><small>Desmarcado por padrão, porque notas costumam ser pessoais.</small></span>
+    </label>
+    <label for="shLink">Link</label>
+    <textarea id="shLink" rows="4" readonly></textarea>
+    <p class="hint" id="shHint"></p>
+    <div class="actions">
+      <button type="button" id="shClose">Fechar</button>
+      <button type="button" id="shNative" hidden>Enviar…</button>
+      <button type="button" class="primary" id="shCopy">Copiar link</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Receber álbum de um link -->
+<dialog id="dlgReceive">
+  <form method="dialog">
+    <h2>Álbum compartilhado</h2>
+    <p id="rcInfo"></p>
+    <p class="hint">Ele será adicionado como um álbum novo. Nada do que você já tem é alterado. O link é uma cópia: mudanças feitas depois por quem enviou não chegam aqui.</p>
+    <div class="actions">
+      <button type="button" id="rcCancel">Cancelar</button>
+      <button type="button" class="primary" id="rcImport">Adicionar à biblioteca</button>
+    </div>
   </form>
 </dialog>
 

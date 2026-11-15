@@ -20,6 +20,7 @@
   <span class="tools" id="albumTools">
     <button id="btnLibrary" type="button" title="Voltar para a biblioteca (Esc)">← Biblioteca</button>
     <span class="stat" id="stat"></span>
+    <button id="btnAddShared" type="button" class="primary" hidden>＋ Adicionar à biblioteca</button>
     <button id="btnShare" type="button" title="Gerar um link para compartilhar este álbum">🔗 Compartilhar</button>
     <button id="btnSettings" type="button">⚙ Configurar</button>
   </span>
@@ -31,6 +32,10 @@
 <section id="viewLibrary" class="view scroll" aria-label="Biblioteca de fichários"></section>
 
 <section id="viewAlbum" class="view" hidden>
+  <div id="previewBar" class="previewbar" role="status" hidden>
+    <span><b>Álbum compartilhado</b>: só para ver. Ele ainda não está na sua biblioteca.</span>
+    <button type="button" class="primary" id="pvAdd">Adicionar à biblioteca</button>
+  </div>
   <main id="stage" aria-label="Álbum"><div id="book"></div></main>
 
   <nav class="pager" aria-label="Páginas">
@@ -222,15 +227,14 @@
   </form>
 </dialog>
 
-<!-- Receber álbum de um link -->
-<dialog id="dlgReceive">
+<!-- Ver uma carta de um álbum compartilhado (só leitura) -->
+<dialog id="dlgPeek">
   <form method="dialog">
-    <h2>Álbum compartilhado</h2>
-    <p id="rcInfo"></p>
-    <p class="hint">Ele será adicionado como um álbum novo. Nada do que você já tem é alterado. O link é uma cópia: mudanças feitas depois por quem enviou não chegam aqui.</p>
+    <h2 id="pkName"></h2>
+    <div class="preview" id="pkImg" role="img" aria-label="Carta"></div>
+    <p id="pkInfo"></p>
     <div class="actions">
-      <button type="button" id="rcCancel">Cancelar</button>
-      <button type="button" class="primary" id="rcImport">Adicionar à biblioteca</button>
+      <button type="button" id="pkClose">Fechar</button>
     </div>
   </form>
 </dialog>

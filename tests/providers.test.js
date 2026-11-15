@@ -178,3 +178,25 @@ test('Idiomas: se a imagem em inglês também não existe, a carta fica sem imag
   const r = await fillMissingImages([{ sourceId: 'X-1', image: '', source: 'pokemon', language: 'ko' }], { probe: async () => false });
   eq([r[0].image, r[0].imageFallback], ['', undefined]);
 });
+
+/* ---------- Imagens quebradas ---------- */
+import { findImage, repairImage } from '../src/js/providers/images.js';
+
+test('Imagens: imagem do TCGdex que não existe (404) é trocada pela imagem em inglês', async () => {
+  const card = { sourceId: 'swsh2-61', source: 'pokemon', language: 'pt', image: 'https://assets.tcgdex.net/pt/swsh/swsh2/61/low.webp' };
+  const fixed = await repairImage(card, { probe: async u => u.includes('images.scrydex.com/pokemon/swsh2-61/') });
+  eq([fixed.image, fixed.imageFallback], ['https://images.scrydex.com/pokemon/swsh2-61/small', 'en']);
+});
+test('Imagens: sem o Scrydex, tenta o mesmo endereço do TCGdex em inglês', async () => {
+  const card = { sourceId: 'swsh2-61', source: 'pokemon', language: 'pt', image: 'https://assets.tcgdex.net/pt/swsh/swsh2/61/low.webp' };
+  const found = await findImage(card, { probe: async u => u === 'https://assets.tcgdex.net/en/swsh/swsh2/61/low.webp' });
+  eq(found, { url: 'https://assets.tcgdex.net/en/swsh/swsh2/61/low.webp', fallback: 'en' });
+});
+test('Imagens: repairImage sem nenhuma opção limpa a imagem quebrada e a marca de alternativa', async () => {
+  const fixed = await repairImage({ sourceId: 'X-1', source: 'pokemon', language: 'ko', image: 'https://assets.tcgdex.net/ko/x/x/1/low.webp', imageFallback: 'en' }, { probe: async () => false });
+  eq([fixed.image, 'imageFallback' in fixed], ['', false]);
+});
+test('Imagens: cartas de outros jogos não são consertadas pelo Scrydex', async () => {
+  const fixed = await repairImage({ sourceId: 'abc', source: 'magic', image: 'https://x/y.jpg' }, { probe: async () => true });
+  eq(fixed.image, '');
+});

@@ -184,6 +184,15 @@ export function createBook(stage, handlers = {}) {
     // Clicar na capa fechada abre o fichário.
     if (spread === 0 && e.target.closest('.cover-out')) step(1);
   });
+  // Imagem salva que deixou de carregar: mostra o nome da carta no lugar do ícone quebrado e avisa o app, que tenta consertar.
+  el.addEventListener('error', e => {
+    const img = e.target, slot = img.tagName === 'IMG' && img.closest('.slot.filled');
+    if (!slot) return;
+    const name = slot.getAttribute('aria-label') || '';
+    slot.classList.add('noimg');
+    img.replaceWith(Object.assign(document.createElement('div'), { className: 'label', textContent: name.replace(/ (ainda não tenho)$/, '') }));
+    handlers.onBrokenImage?.(slot.dataset.key);
+  }, true);
   el.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const s = e.target.closest?.('.slot[data-page]');

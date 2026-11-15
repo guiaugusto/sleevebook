@@ -1,6 +1,7 @@
 // Busca de cartas dentro do modal de cadastro. Resultado clicado preenche o formulário.
 // Para Pokémon há filtros avançados (set, raridade, ilustrador, idioma) e "Mostrar mais".
 import { $, esc, debounce } from './util.js';
+import { repairImage } from './providers/images.js';
 import { GAMES, LANGUAGES, PAGE_SIZE, hasSearch, hasFilters, searchCards, supportsFilters, loadFilterOptions } from './providers/index.js';
 
 const CARD_IDS = {
@@ -98,6 +99,25 @@ export function initSearch({ onPick, getGame, ids = CARD_IDS }) {
     const b = e.target.closest('.res');
     if (b) onPick(results[+b.dataset.i]);
   });
+
+  // O TCGdex às vezes lista uma imagem que não existe (404): troca por outra que carregue, ou tira a figura quebrada.
+  list.addEventListener('error', async e => {
+    const img = e.target;
+    const btn = img.tagName === 'IMG' && img.closest('.res');
+    if (!btn) return;
+    const i = +btn.dataset.i, card = results[i];
+    if (!card || card.imageChecked) return;
+    card.imageChecked = true;
+    const fixed = await repairImage(card);
+    if (results[i] !== card) return;                    // a lista mudou enquanto procurávamos
+    results[i] = { ...fixed, imageChecked: true };
+    if (fixed.image) {
+      img.src = fixed.image;
+      if (fixed.imageFallback === 'en') btn.querySelector('small').append(' · imagem em inglês');
+    } else {
+      img.replaceWith(Object.assign(document.createElement('span'), { className: 'noimg' }));
+    }
+  }, true);
 
   function syncAdv() {
     if (!adv) return;

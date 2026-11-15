@@ -59,3 +59,9 @@ O seletor "Idioma da carta" ficava dentro de "Filtros", fechado por padrão, e a
 - Muitas cartas existem no TCGdex em português, coreano etc. **sem imagem** (ex.: Bidoof GG29/70 da Galeria de Galar, em inglês e em português). O Scrydex só tem endereço previsível para inglês e japonês.
 - Para os outros idiomas, quando o TCGdex não traz imagem, o app usa a **imagem em inglês** da mesma carta (mesma arte; o texto da carta é em inglês), se existir no Scrydex, e marca `imageFallback: 'en'`. A busca mostra "· imagem em inglês" no resultado, para não passar a imagem por ser do idioma escolhido. Se nem a imagem em inglês existir, a carta fica sem imagem (dá para colar uma URL ou enviar foto).
 - As miniaturas da busca deixaram de usar `loading="lazy"`: dentro do diálogo, com lista rolável, o navegador demorava a carregá-las e elas pareciam ausentes.
+
+## Atualização 7 (2026-11-15): imagens listadas que não existem
+
+- O TCGdex às vezes **lista** uma imagem que dá 404 (ex.: Luxio 61/192, Rixa Rebelde, em português: o campo `image` existe, mas nenhum arquivo `low`/`high` `.webp`/`.png`). Antes o app mostrava o ícone de imagem quebrada.
+- **Busca**: se uma miniatura falha ao carregar, `repairImage` procura outra (Scrydex em inglês e, se houver, o mesmo endereço do TCGdex trocando o idioma por `en`), troca a miniatura e marca "· imagem em inglês". Se nada funcionar, mostra o quadrado vazio em vez do ícone quebrado. Só entra em ação quando há falha, sem testar todas as imagens a cada busca.
+- **Álbum**: se a imagem salva de uma carta deixa de carregar, o slot mostra o nome da carta no lugar do ícone e o app tenta consertar uma vez por carta (nas cartas de Pokémon), gravando o novo endereço.

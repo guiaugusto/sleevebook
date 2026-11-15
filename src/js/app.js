@@ -6,6 +6,7 @@ import { PRESETS, sanitizeLayout, slotsInGrid, totalSlots, totalSheets, parseSlo
 import { createColorPicker } from './wheel.js';
 import { initCardForm } from './cardform.js';
 import { initSearch } from './search.js';
+import { repairImage } from './providers/images.js';
 import { GAMES } from './providers/index.js';
 import { renderCollection } from './collection.js';
 import { renderWishlist, initWishlistDialog } from './wishlist.js';
@@ -325,6 +326,20 @@ function wireViews() {
   });
 }
 
+/** Uma imagem salva deixou de carregar: procura outra, grava na carta e redesenha o slot. Tenta uma vez por carta. */
+const triedImages = new Set();
+async function repairSlotImage(key) {
+  const rec = state.slots.get(key), card = rec && state.cards.get(rec.cardId);
+  if (!card || triedImages.has(card.id)) return;
+  triedImages.add(card.id);
+  const fixed = await repairImage(card);
+  if (!fixed.image) return;
+  const saved = { ...card, image: fixed.image, imageFallback: fixed.imageFallback, updatedAt: Date.now() };
+  await db.put('cards', saved);
+  state.cards.set(saved.id, saved);
+  book.updateSlot(key);
+}
+
 /** Move a carta de `from` para `to`; se `to` já tem carta, as duas trocam de lugar. */
 export async function moveCard(from, to) {
   const a = state.slots.get(from), b = state.slots.get(to);
@@ -381,7 +396,7 @@ function wireBackup() {
 
 /* ---------- Início ---------- */
 async function main() {
-  book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot), onMove: moveCard });
+  book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot), onMove: moveCard, onBrokenImage: repairSlotImage });
   await loadAlbum();
   wireNav(); wireAlbums(); wireSettings(); wireCards(); wireBackup(); wireViews();
   draw();

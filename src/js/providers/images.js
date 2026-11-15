@@ -40,19 +40,37 @@ export function probeImage(url, ms = 4000) {
 }
 
 /**
- * Devolve a lista com `image` preenchida onde foi possível achar no Scrydex. As cartas são testadas em paralelo.
- * - Inglês e japonês: imagem do próprio idioma.
- * - Outros idiomas (português, coreano…): o Scrydex não tem o endereço da versão naquele idioma; usa a imagem em
- *   **inglês** da mesma carta, se existir, e marca `imageFallback: 'en'` (a arte é a mesma; o texto da carta é em inglês).
+ * Procura uma imagem que carregue para a carta, na ordem:
+ * 1. Inglês e japonês: o Scrydex no próprio idioma.
+ * 2. Outros idiomas (português, coreano…): a imagem em **inglês** da mesma carta, no Scrydex e, se a carta já
+ *    tinha um endereço do TCGdex, o mesmo endereço trocando o idioma por "en". A arte é a mesma; o texto da carta
+ *    é em inglês, então o resultado leva `imageFallback: 'en'`.
+ * Devolve { url, fallback } ou null.
  */
+export async function findImage(card, { probe = probeImage } = {}) {
+  const lang = card.language ?? 'en';
+  const own = lang === 'en' || lang === 'ja';
+  const urls = scrydexCandidates(card.sourceId, 'small', own ? lang : 'en');
+  if (!own && /assets\.tcgdex\.net\//.test(card.image || '')) urls.push(card.image.replace(`/${lang}/`, '/en/'));
+  for (const url of urls) if (await probe(url)) return { url, fallback: own ? null : 'en' };
+  return null;
+}
+
+/** Devolve a lista com `image` preenchida onde a carta veio sem imagem. As cartas são testadas em paralelo. */
 export async function fillMissingImages(cards, { probe = probeImage } = {}) {
   return Promise.all(cards.map(async card => {
     if (card.image || card.source !== 'pokemon') return card;
-    const lang = card.language ?? 'en';
-    const own = lang === 'en' || lang === 'ja';
-    for (const url of scrydexCandidates(card.sourceId, 'small', own ? lang : 'en')) {
-      if (await probe(url)) return own ? { ...card, image: url } : { ...card, image: url, imageFallback: 'en' };
-    }
-    return card;
+    const found = await findImage(card, { probe });
+    return found ? { ...card, image: found.url, ...(found.fallback ? { imageFallback: found.fallback } : {}) } : card;
   }));
+}
+
+/**
+ * Conserta uma imagem que o TCGdex listou mas que não existe (404). Acontece, por exemplo, com o Luxio 61/192 da
+ * Rixa Rebelde em português. Devolve a carta com outra imagem, ou com `image: ''` se não houver nenhuma.
+ */
+export async function repairImage(card, { probe = probeImage } = {}) {
+  const found = card.source === 'pokemon' ? await findImage(card, { probe }) : null;
+  const { imageFallback, ...rest } = card;
+  return found ? { ...rest, image: found.url, ...(found.fallback ? { imageFallback: found.fallback } : {}) } : { ...rest, image: '' };
 }

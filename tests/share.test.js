@@ -21,6 +21,20 @@ test('compartilhar: ida e volta preserva álbum, cartas e posições', async () 
   ok(got.album.id !== 'a1' && got.cards.every(c => c.id.startsWith('id')), 'ids novos');
   eq(got.slots.every(s => s.key.startsWith(got.album.id + ':') && got.cards.some(c => c.id === s.cardId)), true);
 });
+test('compartilhar: endereço de imagem do TCGdex vai abreviado e volta idêntico', () => {
+  const cards = [card('c1'), card('c2', { language: 'pt', sourceId: 'sv05-010', image: 'https://assets.tcgdex.net/pt/sv/sv05/010/high.webp' }),
+    card('c3', { language: 'pt', imageFallback: 'en', sourceId: 'sv05-011', image: 'https://assets.tcgdex.net/en/sv/sv05/011/high.webp' }),
+    card('c4', { sourceId: 'x-1', image: 'https://images.scrydex.com/pokemon/sv5-10/small' }),
+    card('c5', { sourceId: 'sv05-012', image: 'https://assets.tcgdex.net/en/sv/sv99/012/high.webp' })];
+  const slots = cards.map((c, i) => slot(c.id, 1, Math.floor(i / 3), i % 3));
+  const p = buildPayload(album, slots, cards);
+  eq(p.s.map(r => r[15]), ['~me', '~sv', '~sv', 'https://images.scrydex.com/pokemon/sv5-10/small', 'https://assets.tcgdex.net/en/sv/sv99/012/high.webp']);
+  eq(parsePayload(p, { newId: ids }).cards.map(c => c.image), cards.map(c => c.image));
+});
+test('compartilhar: forma abreviada sem sourceId não vira endereço', () => {
+  const p = { v: 1, a: { n: 'x', r: 3, c: 3, p: 4 }, s: [[1, 0, 0, 'A', '', '', '', 'pokemon', '', 'en', 1, '', '', '', '', '~sv']] };
+  eq(parsePayload(p, { newId: ids }).cards[0].image, '');
+});
 test('compartilhar: notas só vão se pedido e fotos enviadas ficam de fora', async () => {
   const cards = [card('c1', { notes: 'comprada na feira', image: 'data:image/jpeg;base64,AAAA' })];
   const slots = [slot('c1', 1, 0, 0)];

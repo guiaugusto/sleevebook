@@ -30,6 +30,20 @@ export function safeImage(url) {
   } catch { return ''; }
 }
 
+/* ---------- Imagem do TCGdex abreviada ---------- */
+// O endereço do TCGdex é https://assets.tcgdex.net/{idioma}/{série}/{set}/{número}/high.webp, e o sourceId da carta
+// é "{set}-{número}". Quando o endereço segue esse padrão, o link guarda só "~{série}" e o resto é refeito ao abrir.
+const tcgdexSplit = id => { const i = String(id ?? '').lastIndexOf('-'); return i < 1 ? null : [id.slice(0, i), id.slice(i + 1)]; };
+const tcgdexUrl = (lang, serie, sourceId) => { const p = tcgdexSplit(sourceId); return p ? `https://assets.tcgdex.net/${lang}/${serie}/${p[0]}/${p[1]}/high.webp` : ''; };
+/** Idioma que aparece no endereço da imagem: o da carta, ou inglês quando a imagem é a alternativa em inglês. */
+const imageLang = (lang, flags) => (flags & 2 ? 'en' : lang || 'en');
+
+function shortImage(c, flags) {
+  const img = safeImage(c.image);
+  const m = /^https:\/\/assets\.tcgdex\.net\/[^/]+\/([\w-]+)\//.exec(img);
+  return m && img === tcgdexUrl(imageLang(c.language, flags), m[1], c.sourceId) ? '~' + m[1] : img;
+}
+
 /* ---------- Álbum <-> payload compacto ---------- */
 // Cada carta é uma lista: [página, linha, coluna, nome, set, número, total do set, fonte, sourceId, idioma,
 //                          sinalizadores, quantidade, condição, foil, notas, imagem]
@@ -46,7 +60,7 @@ export function buildPayload(album, slots, cards, { includeNotes = false } = {})
     const flags = (c.owned === false ? 0 : 1) | (c.imageFallback === 'en' ? 2 : 0);
     const cond = CONDITIONS.indexOf(c.condition);      // vazio = "NM", a condição padrão (índice 1)
     const row = [s.page, s.row, s.col, c.name || '', c.set || '', c.number || '', c.setTotal ?? '', c.source || '', c.sourceId || '', c.language || '',
-      flags, c.qty > 1 ? c.qty : '', cond < 0 || cond === 1 ? '' : cond, c.foil || '', includeNotes ? (c.notes || '') : '', safeImage(c.image)];
+      flags, c.qty > 1 ? c.qty : '', cond < 0 || cond === 1 ? '' : cond, c.foil || '', includeNotes ? (c.notes || '') : '', shortImage(c, flags)];
     while (row.length > 3 && row[row.length - 1] === '') row.pop();
     rows.push(row);
   }
@@ -89,8 +103,11 @@ export function parsePayload(p, { newId = uid, now = Date.now() } = {}) {
       language: /^[a-z]{2,3}(-[a-z]{2,4})?$/i.test(language) ? language : undefined,
       condition: CONDITIONS[Number.isInteger(cond) && cond >= 0 && cond < CONDITIONS.length ? cond : 1],
       qty: Number.isFinite(qty) && qty > 1 ? Math.min(9999, Math.trunc(qty)) : 1,
-      owned: !!(f & 1), notes: text(notes, 500), image: safeImage(image), updatedAt: now,
+      owned: !!(f & 1), notes: text(notes, 500), image: '', updatedAt: now,
     };
+    // "~série" = endereço do TCGdex refeito a partir do idioma e do sourceId; qualquer outro valor passa pelo filtro de imagens.
+    card.image = typeof image === 'string' && /^~[\w-]{1,20}$/.test(image) && card.sourceId
+      ? safeImage(tcgdexUrl(imageLang(card.language, f), image.slice(1), card.sourceId)) : safeImage(image);
     if (FOILS.includes(foil)) card.foil = foil;
     if (f & 2 && card.image) card.imageFallback = 'en';
     if (card.language === undefined) delete card.language;

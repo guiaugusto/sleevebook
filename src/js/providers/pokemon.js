@@ -81,14 +81,39 @@ function withTimeout(ms, signal) {
   return { signal: ctl.signal, done: () => clearTimeout(timer) };
 }
 
-export async function search(query, { signal } = {}) {
+async function searchPokemonTcg(query, signal) {
   const t = withTimeout(6000, signal);
   try {
     const res = await fetch(buildUrl(query), { signal: t.signal });
     if (!res.ok) throw new Error(`Pokémon TCG API respondeu ${res.status}`);
     return normalize(await res.json());
-  } catch (e) {
-    if (signal?.aborted) throw e;           // o usuário cancelou: não tenta a reserva
-    return searchTcgdex(query, signal);
   } finally { t.done(); }
+}
+
+const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+/** "040/102" → "40"; "GG31/70" → "gg31". Compara o número da carta sem zeros à esquerda nem o total do set. */
+const numKey = n => norm(String(n ?? '').split('/')[0]).replace(/^0+(?=\d)/, '');
+
+/** Duas fontes descrevem a mesma carta? Mesmo nome e número, e nomes de set iguais ou um contido no outro. */
+export function sameCard(a, b) {
+  if (norm(a.name) !== norm(b.name) || numKey(a.number) !== numKey(b.number)) return false;
+  const sa = norm(a.set), sb = norm(b.set);
+  return !sa || !sb || sa === sb || sa.includes(sb) || sb.includes(sa);
+}
+
+/** Junta as fontes: tudo de `main` e, de `extra`, só o que `main` não tem. */
+export function mergeResults(main, extra) {
+  return [...main, ...extra.filter(c => !main.some(m => sameCard(m, c)))];
+}
+
+/**
+ * Consulta as duas fontes ao mesmo tempo e junta os resultados. Nenhuma das duas tem todas as cartas
+ * (por exemplo, a Pokémon TCG API não tinha a promo MEP 040 do Turtwig), e a Pokémon TCG API às vezes fica fora do ar.
+ * Só falha se as duas falharem.
+ */
+export async function search(query, { signal } = {}) {
+  const [a, b] = await Promise.allSettled([searchPokemonTcg(query, signal), searchTcgdex(query, signal)]);
+  if (signal?.aborted) throw new DOMException('Busca cancelada', 'AbortError');
+  if (a.status === 'rejected' && b.status === 'rejected') throw b.reason;
+  return mergeResults(a.value ?? [], b.value ?? []);
 }

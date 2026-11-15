@@ -26,14 +26,14 @@ Um álbum digital para catalogar coleções de cartas TCG, no formato de um álb
 | Stack | HTML, CSS e módulos ES, sem build | [ADR 0001](adr/0001-site-estatico-sem-build.md) |
 | Armazenamento | IndexedDB, local-first, export JSON | [ADR 0002](adr/0002-indexeddb-local-first.md) |
 | Cor do álbum | uma cor base, o resto derivado | [ADR 0003](adr/0003-cor-do-album-derivada.md) |
-| Busca de cartas | provedores por jogo; Pokémon com reserva | [ADR 0004](adr/0004-busca-pokemon-com-reserva.md) |
+| Busca de cartas | provedores por jogo; Pokémon com duas fontes juntas | [ADR 0004](adr/0004-busca-pokemon-com-reserva.md) |
 | Licença | MIT | [LICENSE](../LICENSE) |
 
 ### O que mudou em relação ao planejamento inicial
 
 - **Sem Vite/TypeScript**: não há Node na máquina de desenvolvimento, então o projeto é JavaScript puro com módulos ES (ADR 0001). Pode ganhar um build depois sem reescrita.
 - **Sem Dexie**: a camada de IndexedDB é própria e pequena (`src/js/store.js`).
-- **Pokémon com reserva**: a Pokémon TCG API oscilou durante os testes; há fallback para o TCGdex (ADR 0004).
+- **Pokémon com duas fontes**: a Pokémon TCG API oscila e não tem todas as cartas; a busca consulta também o TCGdex e junta os resultados (ADR 0004).
 - **Deploy**: o GitHub Pages não estava disponível com o repositório privado no plano gratuito. Depois que o repositório virou público, o Pages foi ativado e o workflow passou a publicar a cada push na `master` ([#31](https://github.com/guiaugusto/sleevebook/pull/31)).
 
 ## Modelo de dados
@@ -61,7 +61,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ### v0.2 · Cartas de verdade
 
-- ✅ Buscar carta em base pública e preencher os campos: Pokémon TCG API (com reserva TCGdex), Scryfall, YGOPRODeck ([#22](https://github.com/guiaugusto/sleevebook/pull/22))
+- ✅ Buscar carta em base pública e preencher os campos: Pokémon (Pokémon TCG API e TCGdex juntas), Scryfall, YGOPRODeck, com filtro por palavras extras (set, número) ([#22](https://github.com/guiaugusto/sleevebook/pull/22))
 - ✅ Vários álbuns: criar, trocar, renomear, excluir ([#23](https://github.com/guiaugusto/sleevebook/pull/23))
 - ✅ Mover e trocar cartas de slot arrastando, inclusive entre páginas ([#24](https://github.com/guiaugusto/sleevebook/pull/24))
 - ✅ Contagem por página, frente e verso separados ([#24](https://github.com/guiaugusto/sleevebook/pull/24))

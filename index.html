@@ -10,25 +10,38 @@
 <body>
 <header class="top">
   <h1 id="title">Sleevebook</h1>
-  <select id="albumSelect" aria-label="Álbum atual"></select>
-  <button id="btnNew" type="button" title="Criar outro álbum">＋ Novo</button>
-  <span class="stat" id="stat"></span>
-  <button id="btnSettings" type="button">⚙ Configurar</button>
+  <nav class="tabs" id="tabs" aria-label="Seções">
+    <button type="button" data-view="album" class="on">Álbum</button>
+    <button type="button" data-view="collection">Coleção</button>
+    <button type="button" data-view="wishlist">Wishlist</button>
+  </nav>
+  <span class="tools" id="albumTools">
+    <select id="albumSelect" aria-label="Álbum atual"></select>
+    <button id="btnNew" type="button" title="Criar outro álbum">＋ Novo</button>
+    <span class="stat" id="stat"></span>
+    <button id="btnSettings" type="button">⚙ Configurar</button>
+  </span>
   <button id="btnExport" type="button">Exportar</button>
   <button id="btnImport" type="button">Importar</button>
   <input type="file" id="fileImport" accept="application/json" hidden>
 </header>
 
-<main id="stage" aria-label="Álbum"><div id="book"></div></main>
+<section id="viewAlbum" class="view">
+  <main id="stage" aria-label="Álbum"><div id="book"></div></main>
 
-<nav class="pager" aria-label="Páginas">
-  <button id="first" type="button" title="Primeira página">⏮</button>
-  <button id="prev" type="button" title="Anterior (←)">◀</button>
-  <span id="pos" class="stat" aria-live="polite"></span>
-  <input type="number" id="jump" min="1" placeholder="Ir p/ pág." aria-label="Ir para a página">
-  <button id="next" type="button" title="Próxima (→)">▶</button>
-  <button id="last" type="button" title="Última página">⏭</button>
-</nav>
+  <nav class="pager" aria-label="Páginas">
+    <button id="first" type="button" title="Primeira página">⏮</button>
+    <button id="prev" type="button" title="Anterior (←)">◀</button>
+    <span id="pos" class="stat" aria-live="polite"></span>
+    <input type="number" id="jump" min="1" placeholder="Ir p/ pág." aria-label="Ir para a página">
+    <button id="next" type="button" title="Próxima (→)">▶</button>
+    <button id="last" type="button" title="Última página">⏭</button>
+  </nav>
+</section>
+
+<section id="viewCollection" class="view scroll" hidden aria-label="Coleção"></section>
+
+<section id="viewWishlist" class="view scroll" hidden aria-label="Wishlist"></section>
 
 <!-- Configurar álbum -->
 <dialog id="dlgSet">
@@ -49,6 +62,31 @@
       <button type="button" class="danger" id="sDelete" style="margin-right:auto">Excluir álbum</button>
       <button type="button" id="sCancel">Cancelar</button>
       <button class="primary" id="sSave" value="save">Aplicar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Wishlist: adicionar e editar -->
+<dialog id="dlgWish">
+  <form method="dialog" id="formWish">
+    <h2 id="wTitle">Quero esta carta</h2>
+    <div id="wSearchBox" class="searchbox">
+      <div class="row"><div style="flex:2"><label for="wqSearch">Buscar carta pelo nome</label><input id="wqSearch" type="search" autocomplete="off"></div>
+        <div><label for="wqGame">Jogo</label><select id="wqGame"></select></div></div>
+      <p class="hint" id="wqStatus" aria-live="polite"></p>
+      <div id="wqResults" class="results"></div>
+    </div>
+    <label for="wName">Nome da carta</label><input id="wName" required maxlength="100">
+    <div class="row">
+      <div><label for="wSet">Coleção / set</label><input id="wSet" maxlength="80"></div>
+      <div><label for="wNum">Número</label><input id="wNum" maxlength="20"></div>
+      <div><label for="wPrio">Prioridade</label><select id="wPrio"><option value="1">Alta</option><option value="2" selected>Média</option><option value="3">Baixa</option></select></div>
+    </div>
+    <label for="wNotes">Notas</label><textarea id="wNotes" rows="2" maxlength="300"></textarea>
+    <div class="actions">
+      <button type="button" class="danger" id="wDel" hidden>Remover</button>
+      <button type="button" id="wCancel">Cancelar</button>
+      <button class="primary" id="wSave" value="save">Salvar</button>
     </div>
   </form>
 </dialog>

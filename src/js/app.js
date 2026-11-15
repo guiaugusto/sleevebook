@@ -7,6 +7,9 @@ import { createColorPicker } from './wheel.js';
 import { initCardForm } from './cardform.js';
 import { initSearch } from './search.js';
 import { GAMES } from './providers/index.js';
+import { renderCollection } from './collection.js';
+import { renderWishlist, initWishlistDialog } from './wishlist.js';
+import { firstEmptySlot } from './grid.js';
 import { $, uid, toast, downloadJSON, slug } from './util.js';
 
 const state = { albums: [], album: null, slots: new Map(), cards: new Map() };
@@ -190,6 +193,75 @@ function wireCards() {
   };
 }
 
+/* ---------- Seções: Álbum, Coleção, Wishlist ---------- */
+const VIEWS = { album: '', collection: '#colecao', wishlist: '#wishlist' };
+let view = 'album';
+
+async function showView(name) {
+  view = name;
+  for (const v of Object.keys(VIEWS)) $(`#view${v[0].toUpperCase()}${v.slice(1)}`).hidden = v !== name;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.view === name));
+  $('#albumTools').hidden = name !== 'album';
+  history.replaceState(null, '', VIEWS[name] || location.pathname);
+  if (name === 'album') book.layout();
+  if (name === 'collection') await renderCollectionView();
+  if (name === 'wishlist') await renderWishlistView();
+}
+
+async function renderCollectionView() {
+  const [albums, slots, cards] = await Promise.all([db.all('albums'), db.all('slots'), db.all('cards')]);
+  renderCollection($('#viewCollection'), { albums, slots, cards, onGoto: gotoCard });
+}
+
+/** Abre o álbum e a página onde a carta está. */
+async function gotoCard(albumId, page) {
+  if (albumId !== state.album.id) await switchAlbum(albumId);
+  await showView('album');
+  book.goTo(spreadForPage(page));
+}
+
+let wishDialog;
+async function renderWishlistView() {
+  const items = await db.all('wishlist');
+  renderWishlist($('#viewWishlist'), {
+    items,
+    onAdd: () => wishDialog.open(null),
+    onEdit: item => wishDialog.open(item),
+    onMove: wishToAlbum,
+  });
+}
+
+/** Coloca o item da wishlist no primeiro slot livre do álbum atual e tira da lista. */
+async function wishToAlbum(item) {
+  const free = firstEmptySlot(state.album, new Set(state.slots.keys()));
+  if (!free) { toast(`O álbum "${state.album.name}" está cheio.`); return; }
+  const card = {
+    id: uid(), name: item.name, set: item.set, setTotal: item.setTotal ?? null, number: item.number, image: item.image || '',
+    condition: 'NM (Near Mint)', qty: 1, price: item.price ?? null, notes: item.notes || '',
+    source: item.source || 'manual', sourceId: item.sourceId || null, updatedAt: Date.now(),
+  };
+  const rec = { key: free.key, albumId: state.album.id, page: free.page, row: free.row, col: free.col, cardId: card.id };
+  await db.put('cards', card);
+  await db.put('slots', rec);
+  await db.del('wishlist', item.id);
+  state.cards.set(card.id, card);
+  state.slots.set(rec.key, rec);
+  await showView('album');
+  book.updateSlot(rec.key);
+  updateStat();
+  book.goTo(spreadForPage(free.page));
+  toast(`${card.name} entrou na pág. ${free.page} de "${state.album.name}"`);
+}
+
+function wireViews() {
+  document.querySelectorAll('#tabs button').forEach(b => { b.onclick = () => showView(b.dataset.view); });
+  wishDialog = initWishlistDialog({
+    getGame: () => state.album.game,
+    onSave: async item => { await db.put('wishlist', item); await renderWishlistView(); toast(`${item.name} na wishlist`); },
+    onDelete: async item => { await db.del('wishlist', item.id); await renderWishlistView(); toast(`${item.name} removida da wishlist`); },
+  });
+}
+
 /** Move a carta de `from` para `to`; se `to` já tem carta, as duas trocam de lugar. */
 export async function moveCard(from, to) {
   const a = state.slots.get(from), b = state.slots.get(to);
@@ -248,8 +320,10 @@ function wireBackup() {
 async function main() {
   book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot), onMove: moveCard });
   await loadAlbum();
-  wireNav(); wireAlbums(); wireSettings(); wireCards(); wireBackup();
+  wireNav(); wireAlbums(); wireSettings(); wireCards(); wireBackup(); wireViews();
   draw();
+  const start = Object.entries(VIEWS).find(([, h]) => h && h === location.hash)?.[0];
+  if (start) await showView(start);
 }
 
 // Pontos de extensão usados pelos próximos módulos (cadastro de carta etc.).

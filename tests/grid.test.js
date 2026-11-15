@@ -1,5 +1,5 @@
 import { test, eq } from './run.js';
-import { sanitizeLayout, sheetCount, slotKey, parseSlotKey, inGrid, visiblePages, spreadForPage, countByPage, totalSlots } from '../src/js/grid.js';
+import { sanitizeLayout, sheetCount, slotKey, parseSlotKey, inGrid, visiblePages, spreadForPage, countByPage, totalSlots, firstEmptySlot } from '../src/js/grid.js';
 
 test('sanitizeLayout limita grade e páginas', () => {
   eq(sanitizeLayout({ rows: 0, cols: 99, pages: '' }), { rows: 1, cols: 6, pages: 1 });
@@ -34,5 +34,12 @@ test('spreadForPage leva à folha em que a página aparece', () => {
 test('countByPage ignora cartas fora da grade', () => {
   const a = { rows: 2, cols: 2, pages: 2 };
   eq(countByPage(a, [{ page: 1, row: 0, col: 0 }, { page: 1, row: 1, col: 1 }, { page: 2, row: 0, col: 0 }, { page: 1, row: 2, col: 0 }, { page: 3, row: 0, col: 0 }]), { 1: 2, 2: 1 });
+});
+test('firstEmptySlot acha o primeiro livre e devolve null com álbum cheio', () => {
+  const a = { id: 'a', rows: 1, cols: 2, pages: 2 };
+  eq(firstEmptySlot(a, new Set()).key, 'a:1:0:0');
+  eq(firstEmptySlot(a, new Set(['a:1:0:0'])).key, 'a:1:0:1');
+  eq(firstEmptySlot(a, new Set(['a:1:0:0', 'a:1:0:1'])).key, 'a:2:0:0');
+  eq(firstEmptySlot(a, new Set(['a:1:0:0', 'a:1:0:1', 'a:2:0:0', 'a:2:0:1'])), null);
 });
 test('totalSlots', () => { eq(totalSlots({ rows: 3, cols: 3, pages: 20 }), 180); });

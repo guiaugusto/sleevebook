@@ -2,8 +2,11 @@
 import { $, esc, debounce } from './util.js';
 import { GAMES, hasSearch, searchCards } from './providers/index.js';
 
-export function initSearch({ onPick, getGame }) {
-  const box = $('#searchBox'), input = $('#qSearch'), list = $('#qResults'), status = $('#qStatus'), gameSel = $('#qGame');
+const CARD_IDS = { box: '#searchBox', input: '#qSearch', list: '#qResults', status: '#qStatus', game: '#qGame' };
+
+/** `ids` permite reutilizar a busca em outro diálogo (ex.: wishlist). */
+export function initSearch({ onPick, getGame, ids = CARD_IDS }) {
+  const box = $(ids.box), input = $(ids.input), list = $(ids.list), status = $(ids.status), gameSel = $(ids.game);
   let ctl = null, results = [];
 
   gameSel.innerHTML = Object.entries(GAMES).filter(([k]) => k !== 'other').map(([k, g]) => `<option value="${k}">${g.label}</option>`).join('');

@@ -60,5 +60,16 @@ export function countByPage(album, slots) {
   return out;
 }
 
+/** Primeiro slot livre do álbum (página, linha, coluna). `occupied` é um Set de chaves de slot. */
+export function firstEmptySlot(album, occupied) {
+  for (let page = 1; page <= album.pages; page++)
+    for (let row = 0; row < album.rows; row++)
+      for (let col = 0; col < album.cols; col++) {
+        const key = slotKey(album.id, page, row, col);
+        if (!occupied.has(key)) return { key, page, row, col };
+      }
+  return null;
+}
+
 /** Posição legível: "pág. 7 · linha 2, coluna 3" */
 export const describeSlot = s => `pág. ${s.page} · linha ${s.row + 1}, coluna ${s.col + 1}`;

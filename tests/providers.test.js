@@ -142,3 +142,29 @@ test('Imagens: usa o primeiro endereço que carrega e não mexe em quem já tem 
   eq(r[3].image, '');            // outro jogo: não mexe
   ok(!tried.some(u => u.includes('/x-1/')), 'não deveria testar carta que já tem imagem');
 });
+
+/* ---------- Outros idiomas ---------- */
+import { LANGUAGES as LANGS } from '../src/js/providers/tcgdex.js';
+
+test('Idiomas: o japonês e os demais idiomas do TCGdex estão disponíveis', () => {
+  for (const l of ['en', 'pt', 'ja', 'ko', 'zh-tw', 'zh-cn', 'fr', 'de', 'es', 'it']) ok(l in LANGS, l);
+});
+test('Idiomas: normalizeTcgdex guarda o idioma da carta (padrão inglês)', () => {
+  const card = { id: 'S12a-200', localId: '200', name: 'ビーダル', rarity: 'Illustration rare', set: { name: 'VSTARユニバース', cardCount: { official: 172 } }, image: 'https://assets/ja/S/S12a/200' };
+  eq(normDex(card, 'ja').language, 'ja');
+  eq(normDex(card).language, 'en');
+  eq([normDex(card, 'ja').number, normDex(card, 'ja').image], ['200/172', 'https://assets/ja/S/S12a/200/low.webp']);
+});
+test('Idiomas: buildParams por número da Pokédex ignora o nome', () => {
+  const p = buildParams({ query: 'bibarel', dexId: 400, filters: { rarity: 'Promo' } });
+  eq([p.get('dexId'), p.get('name'), p.get('rarity')], ['eq:400', null, 'eq:Promo']);
+});
+test('Idiomas: Scrydex japonês usa o sufixo _ja', () => {
+  eq(scrydexCandidates('S12a-200', 'small', 'ja')[0], 'https://images.scrydex.com/pokemon/s12a_ja-200/small');
+  eq(scrydexCandidates('sv05-010', 'small', 'ja')[0], 'https://images.scrydex.com/pokemon/sv5_ja-10/small');
+});
+test('Idiomas: fillMissingImages não procura imagem no Scrydex para idiomas sem endereço conhecido', async () => {
+  const probe = async () => true;
+  const r = await fillMissingImages([{ sourceId: 'A-1', image: '', source: 'pokemon', language: 'ko' }, { sourceId: 'S12a-200', image: '', source: 'pokemon', language: 'ja' }], { probe });
+  eq([r[0].image, r[1].image.includes('s12a_ja-200')], ['', true]);
+});

@@ -11,7 +11,7 @@ Acompanhe o que já está pronto no [roadmap](docs/PLANEJAMENTO.md#roadmap).
 - Álbum com grade e número de páginas configuráveis
 - Visual de fichário: começa fechado, abre com a capa de dentro à esquerda e a página 1 à direita; páginas que viram (botões, teclado e deslize no celular)
 - Cor do álbum por roda de cores ou hexadecimal, com papel, bolsos e texto adaptados
-- Cadastro de carta por slot, com busca em bases públicas (Pokémon, Magic, Yu-Gi-Oh!) e, para Pokémon, filtros por set, raridade, ilustrador e idioma
+- Cadastro de carta por slot, com busca em bases públicas (Pokémon, Magic, Yu-Gi-Oh!) e, para Pokémon, filtros por set, raridade, ilustrador e idioma (inclui cartas japonesas e de outros 10 idiomas)
 - Vários álbuns, arrastar cartas entre slots
 - Coleção dos sonhos: marque cada carta como "tenho" ou "ainda quero"; as que faltam aparecem em cinza no álbum
 - Painel da coleção (tenho, faltam, progresso por álbum e por set), lista pesquisável com filtro por situação e wishlist

@@ -2,11 +2,15 @@
 // e filtros por campo (set, raridade, ilustrador…). É a fonte principal da busca de Pokémon (ADR 0004).
 const API = 'https://api.tcgdex.net/v2';
 
-export const LANGUAGES = { en: 'Inglês', pt: 'Português' };
+/** Idiomas do TCGdex. Cada idioma tem o seu próprio catálogo: sets só japoneses, por exemplo, só existem em "ja". */
+export const LANGUAGES = {
+  en: 'Inglês', pt: 'Português', ja: 'Japonês', ko: 'Coreano', 'zh-tw': 'Chinês (tradicional)', 'zh-cn': 'Chinês (simplificado)',
+  fr: 'Francês', de: 'Alemão', es: 'Espanhol', it: 'Italiano', id: 'Indonésio', th: 'Tailandês',
+};
 export const PAGE_SIZE = 30;
 
-/** Carta detalhada do TCGdex → formato do app. */
-export function normalizeTcgdex(card) {
+/** Carta detalhada do TCGdex → formato do app. `lang` é o idioma do catálogo em que a carta foi buscada. */
+export function normalizeTcgdex(card, lang = 'en') {
   const tp = card.pricing?.tcgplayer || {};
   let price = null;
   for (const kind of Object.keys(tp)) {
@@ -21,8 +25,9 @@ export function normalizeTcgdex(card) {
     number: total ? `${card.localId}/${total}` : String(card.localId ?? ''),
     image: card.image ? `${card.image}/low.webp` : '',
     price,
-    rarity: card.rarity ?? '',
+    rarity: card.rarity && card.rarity !== 'None' ? card.rarity : '',   // o TCGdex usa "None" quando a carta não tem raridade
     illustrator: card.illustrator ?? '',
+    language: lang,
     source: 'pokemon',
     sourceId: card.id,
   };
@@ -31,10 +36,11 @@ export function normalizeTcgdex(card) {
 /** Filtros preenchidos? ({ setId, rarity, illustrator }) */
 export const hasFilters = f => !!(f && (f.setId || f.rarity || f.illustrator));
 
-/** Monta a consulta da lista de cartas: nome (contém) + filtros exatos + paginação. */
-export function buildParams({ query = '', filters = {}, page = 1 } = {}) {
+/** Monta a consulta da lista de cartas: nome (contém) ou número da Pokédex + filtros exatos + paginação. */
+export function buildParams({ query = '', filters = {}, page = 1, dexId = null } = {}) {
   const p = new URLSearchParams();
-  if (query.trim()) p.set('name', query.trim());
+  if (dexId) p.set('dexId', `eq:${dexId}`);
+  else if (query.trim()) p.set('name', query.trim());
   if (filters.setId) p.set('set.id', `eq:${filters.setId}`);
   if (filters.rarity) p.set('rarity', `eq:${filters.rarity}`);
   if (filters.illustrator) p.set('illustrator', `eq:${filters.illustrator}`);
@@ -49,15 +55,40 @@ async function getJson(url, signal) {
   return res.json();
 }
 
-/** Busca cartas (lista + detalhes de cada uma, para ter set, preço e raridade). */
+/**
+ * Números da Pokédex dos Pokémon cujo nome em inglês contém `query` (no máximo 3). Serve para achar a carta em
+ * outro idioma digitando o nome em inglês: "Bibarel" não existe no catálogo japonês, mas o Pokémon nº 400 sim.
+ */
+export async function dexIdsForEnglishName(query, signal) {
+  const list = await getJson(`${API}/en/cards?${buildParams({ query, page: 1 })}`, signal);
+  const ids = new Set();
+  for (const c of list.slice(0, 5)) {
+    try { (await getJson(`${API}/en/cards/${encodeURIComponent(c.id)}`, signal)).dexId?.forEach(n => ids.add(n)); }
+    catch (e) { if (e.name === 'AbortError') throw e; }
+    if (ids.size >= 3) break;
+  }
+  return [...ids].slice(0, 3);
+}
+
+/**
+ * Busca cartas (lista + detalhes de cada uma, para ter set e raridade).
+ * Em outro idioma que não o inglês, se o nome digitado não existir naquele catálogo (por exemplo, "Bibarel" em
+ * japonês, que é ビーダル), procura o Pokémon em inglês e busca as cartas dele pelo número da Pokédex.
+ */
 export async function search(query, { signal, filters = {}, page = 1, lang = 'en' } = {}) {
   const base = `${API}/${lang}/cards`;
-  const list = await getJson(`${base}?${buildParams({ query, filters, page })}`, signal);
+  let list = await getJson(`${base}?${buildParams({ query, filters, page })}`, signal);
+  if (!list.length && lang !== 'en' && query.trim()) {
+    const dexIds = await dexIdsForEnglishName(query, signal);
+    const lists = await Promise.all(dexIds.map(dexId => getJson(`${base}?${buildParams({ filters, page, dexId })}`, signal)));
+    const seen = new Set();
+    list = lists.flat().filter(c => !seen.has(c.id) && seen.add(c.id)).slice(0, PAGE_SIZE);
+  }
   const details = await Promise.all(list.map(async c => {
     try { return await getJson(`${base}/${encodeURIComponent(c.id)}`, signal); }
     catch (e) { if (e.name === 'AbortError') throw e; return c; }   // sem detalhes: usa o resumo da lista
   }));
-  return details.map(normalizeTcgdex);
+  return details.map(d => normalizeTcgdex(d, lang));
 }
 
 /* ---------- Opções dos filtros (carregadas uma vez por idioma) ---------- */

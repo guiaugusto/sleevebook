@@ -62,7 +62,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 ### v0.2 · Cartas de verdade
 
 - ✅ Buscar carta em base pública e preencher os campos: Pokémon (TCGdex como fonte principal, completado pela Pokémon TCG API), Scryfall, YGOPRODeck, com filtro por palavras extras ([#22](https://github.com/guiaugusto/sleevebook/pull/22), [#35](https://github.com/guiaugusto/sleevebook/pull/35))
-- ✅ Filtros avançados na busca de Pokémon: set, raridade, ilustrador e idioma (inglês ou português), busca só por filtros e "Mostrar mais"
+- ✅ Filtros avançados na busca de Pokémon: set, raridade, ilustrador e idioma (12 idiomas, incluindo japonês; dá para digitar o nome em inglês), busca só por filtros e "Mostrar mais"
 - ✅ Vários álbuns: criar, trocar, renomear, excluir ([#23](https://github.com/guiaugusto/sleevebook/pull/23))
 - ✅ Mover e trocar cartas de slot arrastando, inclusive entre páginas ([#24](https://github.com/guiaugusto/sleevebook/pull/24))
 - ✅ Contagem por página, frente e verso separados ([#24](https://github.com/guiaugusto/sleevebook/pull/24))
@@ -95,7 +95,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ## Como foi verificado
 
-- 60 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
+- 65 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
 - Telas testadas manualmente no navegador embutido do app: álbum, virar páginas, mudar grade, escolher cor, cadastrar e buscar carta, vários álbuns, arrastar (com eventos de arrastar simulados), Coleção e Wishlist.
 - Chamadas reais às APIs de Scryfall, YGOPRODeck, TCGdex e Pokémon TCG.
 - No site publicado: página carrega, service worker ativo, 21 arquivos em cache, sem erros no console.

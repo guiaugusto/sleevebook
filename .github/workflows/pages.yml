@@ -1,12 +1,10 @@
 name: Publicar no GitHub Pages
 
-# Por enquanto só roda manualmente (Actions → Publicar no GitHub Pages → Run workflow).
-# O repositório é privado e o plano gratuito não oferece Pages para repositórios privados.
-# Quando o repositório for público (ou o plano mudar) e o Pages estiver ativado com a fonte "GitHub Actions",
-# troque o gatilho para publicar a cada push na master:
-#   push:
-#     branches: [master]
+# Publica a cada push na master. Também dá para rodar manualmente (Actions → Run workflow).
+# Requer Settings → Pages com a fonte "GitHub Actions".
 on:
+  push:
+    branches: [master]
   workflow_dispatch:
 
 permissions:

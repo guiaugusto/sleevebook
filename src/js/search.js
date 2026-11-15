@@ -5,7 +5,7 @@ import { GAMES, LANGUAGES, PAGE_SIZE, hasSearch, hasFilters, searchCards, suppor
 
 const CARD_IDS = {
   box: '#searchBox', input: '#qSearch', list: '#qResults', status: '#qStatus', game: '#qGame',
-  adv: { box: '#advBox', set: '#qSet', rarity: '#qRarity', illus: '#qIllus', lang: '#qLang', clear: '#qClear', dlSets: '#dlSets', dlIllus: '#dlIllus', more: '#qMore' },
+  adv: { box: '#advBox', set: '#qSet', rarity: '#qRarity', illus: '#qIllus', lang: '#qLang', clear: '#qClear', dlSets: '#dlSets', dlIllus: '#dlIllus', more: '#qMore', langBox: '#qLangBox', langHint: '#qLangHint' },
 };
 
 /** `ids` permite reutilizar a busca em outro diálogo (ex.: wishlist, sem filtros avançados). */
@@ -75,10 +75,20 @@ export function initSearch({ onPick, getGame, ids = CARD_IDS }) {
       results = append ? [...results, ...batch.filter(c => !seen.has(c.sourceId))] : batch;
       status.textContent = results.length ? `${results.length} resultado(s). Clique para preencher.` : 'Nada encontrado. Tente outras palavras ou preencha à mão.';
       render();
+      renderLangHint();
     } catch (e) {
       if (e.name === 'AbortError') return;
       status.textContent = 'Não foi possível buscar agora. Preencha à mão ou tente de novo.';
     }
+  }
+
+  /** Depois de buscar, sugere procurar em outros idiomas: sets só japoneses, por exemplo, não existem em inglês. */
+  const HINT_LANGS = ['ja', 'ko', 'zh-tw', 'pt', 'en', 'fr', 'de', 'es', 'it'];
+  function renderLangHint() {
+    if (!adv?.langHint) return;
+    const cur = adv.lang.value;
+    adv.langHint.hidden = !advOn();
+    adv.langHint.innerHTML = `Não é a carta que procura? Tente em outro idioma: ${HINT_LANGS.filter(l => l !== cur).map(l => `<button type="button" data-lang="${l}">${LANGUAGES[l]}</button>`).join('')}`;
   }
 
   const later = debounce(run, 350);
@@ -92,6 +102,8 @@ export function initSearch({ onPick, getGame, ids = CARD_IDS }) {
   function syncAdv() {
     if (!adv) return;
     adv.box.hidden = !advOn();
+    if (adv.langBox) adv.langBox.hidden = !advOn();
+    if (adv.langHint) adv.langHint.hidden = true;
     if (adv.more) adv.more.hidden = true;
   }
 
@@ -102,6 +114,12 @@ export function initSearch({ onPick, getGame, ids = CARD_IDS }) {
     adv.lang.addEventListener('change', async () => { adv.set.value = ''; adv.rarity.value = ''; await ensureOptions(); run(); });
     adv.clear.addEventListener('click', () => { adv.set.value = ''; adv.rarity.value = ''; adv.illus.value = ''; run(); });
     adv.more.addEventListener('click', () => { page += 1; run({ append: true }); });
+    adv.langHint?.addEventListener('click', e => {
+      const b = e.target.closest('button[data-lang]');
+      if (!b) return;
+      adv.lang.value = b.dataset.lang;
+      adv.lang.dispatchEvent(new Event('change'));
+    });
   }
 
   return {

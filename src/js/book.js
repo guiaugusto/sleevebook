@@ -1,14 +1,14 @@
 // Fichário: começa fechado (capa de fora). Ao abrir, a capa de dentro fica à esquerda e a página 1 à direita.
 // Cada folha tem frente e verso e vira em 3D em torno da lombada. A capa e a contracapa são folhas "duras",
 // um pouco maiores que as páginas. As páginas têm bolsos de plástico sobre o fundo da cor do álbum.
-import { totalSheets, sheetCount, slotKey, visiblePages, spreadForPage, clamp } from './grid.js';
+import { totalSheets, sheetCount, slotKey, visiblePages, spreadForPage, clamp, UNITS } from './grid.js';
 import { esc } from './util.js';
 
 const FLIP_MS = 800;
 const STAGGER_MS = 60;
 
 // Medidas em "unidades" (a carta tem 63×88). O CSS usa as mesmas.
-const GAP = 5, PAD = 12, HARD = 10, CARD_W = 63, CARD_H = 88;
+const { GAP, PAD, HARD, CARD_W, CARD_H } = UNITS;
 
 /** Abaixo desta largura o livro mostra uma página por vez. */
 export const SINGLE_PAGE_MAX_WIDTH = 700;

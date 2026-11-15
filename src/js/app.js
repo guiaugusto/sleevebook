@@ -8,6 +8,7 @@ import { initCardForm } from './cardform.js';
 import { initSearch } from './search.js';
 import { repairImage } from './providers/images.js';
 import { fetchFoil } from './providers/tcgdex.js';
+import { renderLibrary, flyCover, fadeZoom, coverMetrics } from './library.js';
 import { GAMES } from './providers/index.js';
 import { renderCollection } from './collection.js';
 import { renderWishlist, initWishlistDialog } from './wishlist.js';
@@ -36,11 +37,6 @@ async function loadAlbum(id) {
   state.cards = new Map(cards.map(c => [c.id, c]));
 }
 
-function renderAlbumSelect() {
-  $('#albumSelect').innerHTML = state.albums.map(a => `<option value="${a.id}">${a.name.replace(/[<>&"]/g, '')}</option>`).join('');
-  $('#albumSelect').value = state.album.id;
-}
-
 async function switchAlbum(id) {
   await loadAlbum(id);
   draw({ reset: true });
@@ -51,6 +47,7 @@ async function createAlbum() {
   const a = newAlbum({ name: `Álbum ${n}`, game: state.album.game, color: SWATCH_CYCLE[n % SWATCH_CYCLE.length] });
   await db.put('albums', a);
   await switchAlbum(a.id);
+  await showView('album');
   $('#btnSettings').click();     // abre a configuração para ajustar o novo álbum
 }
 
@@ -61,12 +58,12 @@ async function deleteAlbum() {
   await db.del('albums', state.album.id);
   toast(`Álbum "${state.album.name}" excluído`);
   await switchAlbum();
+  await showView('library');
 }
 
 function draw({ reset = false } = {}) {
   applyTheme($('#book'), state.album.color);
   book.render(state, { reset });
-  renderAlbumSelect();
   $('#title').textContent = state.album.name;
   document.title = `${state.album.name} · Sleevebook`;
   updateStat();
@@ -122,8 +119,10 @@ function renderPos() {
 }
 
 function wireAlbums() {
-  $('#albumSelect').onchange = e => switchAlbum(e.target.value);
-  $('#btnNew').onclick = createAlbum;
+  $('#btnLibrary').onclick = () => backToLibrary();
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape' && view === 'album' && !document.querySelector('dialog[open]') && !movingFrom) backToLibrary();
+  });
   $('#sDelete').onclick = async () => {
     $('#delInfo').textContent = `"${state.album.name}" tem ${state.slots.size} carta(s).`;
     $('#dlgSet').close();
@@ -262,18 +261,91 @@ function wireCards() {
 }
 
 /* ---------- Seções: Álbum, Coleção, Wishlist ---------- */
-const VIEWS = { album: '', collection: '#colecao', wishlist: '#wishlist' };
-let view = 'album';
+const VIEWS = { library: '', album: '#album', collection: '#colecao', wishlist: '#wishlist' };
+let view = 'library';
+
+/** Mostra só a seção `name` (sem animação) e atualiza abas, barra do álbum e endereço. */
+function applyView(name) {
+  view = name;
+  for (const v of Object.keys(VIEWS)) {
+    const el = $(`#view${v[0].toUpperCase()}${v.slice(1)}`);
+    el.hidden = v !== name;
+    el.style.visibility = '';
+    el.getAnimations?.().forEach(a => a.cancel());
+  }
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.view === name || (name === 'album' && b.dataset.view === 'library')));
+  $('#albumTools').hidden = name !== 'album';
+  // O título mostra o nome do álbum só dentro dele; nas outras telas é o nome do app.
+  $('#title').textContent = name === 'album' && state.album ? state.album.name : 'Sleevebook';
+  document.title = name === 'album' && state.album ? `${state.album.name} · Sleevebook` : 'Sleevebook';
+  history.replaceState(null, '', VIEWS[name] || location.pathname);
+}
 
 async function showView(name) {
-  view = name;
-  for (const v of Object.keys(VIEWS)) $(`#view${v[0].toUpperCase()}${v.slice(1)}`).hidden = v !== name;
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.view === name));
-  $('#albumTools').hidden = name !== 'album';
-  history.replaceState(null, '', VIEWS[name] || location.pathname);
+  applyView(name);
   if (name === 'album') book.layout();
+  if (name === 'library') await renderLibraryView();
   if (name === 'collection') await renderCollectionView();
   if (name === 'wishlist') await renderWishlistView();
+}
+
+/* ---------- Biblioteca de fichários ---------- */
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+let transitioning = false;
+
+async function renderLibraryView() {
+  const [albums, slots, cards] = await Promise.all([db.all('albums'), db.all('slots'), db.all('cards')]);
+  albums.sort((a, b) => a.createdAt - b.createdAt);
+  renderLibrary($('#viewLibrary'), { albums, slots, cards, onOpen: openAlbumFromLibrary, onNew: createAlbum });
+}
+
+/** Abre o álbum "aproximando": a capa da prateleira cresce até o tamanho e a posição que tem no livro. */
+async function openAlbumFromLibrary(album, coverEl) {
+  if (transitioning) return;
+  transitioning = true;
+  try {
+    const from = coverEl.getBoundingClientRect();
+    const uFrom = parseFloat(getComputedStyle(coverEl).getPropertyValue('--u'));
+    await loadAlbum(album.id);
+    draw({ reset: true });
+    // Mostra o álbum, ainda invisível, só para medir onde a capa vai ficar.
+    const albumView = $('#viewAlbum');
+    albumView.hidden = false; albumView.style.visibility = 'hidden';
+    $('#albumTools').hidden = false;
+    book.layout();
+    const target = $('#book .sheet.hard .face.cover-out').getBoundingClientRect();
+    const fade = fadeZoom($('#viewLibrary'), { out: true });
+    await flyCover(coverEl, from, target, uFrom);
+    fade?.cancel();
+    applyView('album');
+    book.layout();
+  } finally { transitioning = false; }
+}
+
+/** Volta para a prateleira: fecha o fichário e a capa "se afasta" até o lugar dela. */
+async function backToLibrary() {
+  if (view !== 'album' || transitioning) return;
+  transitioning = true;
+  try {
+    if (book.spread !== 0) { book.goTo(0); await wait(reduceMotion() ? 0 : 1000); }   // fecha o fichário antes
+    await renderLibraryView();
+    const lib = $('#viewLibrary');
+    lib.hidden = false; lib.style.visibility = 'hidden';
+    const coverEl = lib.querySelector(`.libcover[data-id="${CSS.escape(state.album.id)}"]`);
+    coverEl?.scrollIntoView({ block: 'center' });
+    const from = $('#book .sheet.hard .face.cover-out').getBoundingClientRect();
+    const uFrom = parseFloat(getComputedStyle($('#book')).getPropertyValue('--u'));
+    if (coverEl) {
+      const to = coverEl.getBoundingClientRect();
+      $('#viewAlbum').style.visibility = 'hidden';
+      const fade = fadeZoom(lib, { out: false });
+      lib.style.visibility = '';
+      await flyCover(coverEl, from, to, uFrom);
+      fade?.cancel();
+    }
+    applyView('library');
+  } finally { transitioning = false; }
 }
 
 async function renderCollectionView() {
@@ -428,8 +500,8 @@ async function main() {
   await loadAlbum();
   wireNav(); wireAlbums(); wireSettings(); wireCards(); wireBackup(); wireViews();
   draw();
-  const start = Object.entries(VIEWS).find(([, h]) => h && h === location.hash)?.[0];
-  if (start) await showView(start);
+  const start = Object.entries(VIEWS).find(([, h]) => h && h === location.hash)?.[0] ?? 'library';
+  await showView(start);
 }
 
 // Uso offline: registra o service worker (só em http/https).

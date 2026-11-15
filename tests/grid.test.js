@@ -1,4 +1,4 @@
-import { test, eq } from './run.js';
+import { test, eq, ok } from './run.js';
 import { sanitizeLayout, sanitizeBinder, sheetsToPages, pagesToSheets, capacity, presetLabel, BINDER_PRESETS, sheetCount, totalSheets, slotKey, parseSlotKey, inGrid, visiblePages, spreadForPage, countByPage, totalSlots, firstEmptySlot } from '../src/js/grid.js';
 
 test('sanitizeLayout limita grade e páginas', () => {
@@ -66,4 +66,17 @@ test('presets do mercado: capacidade = bolsos × 2 lados × folhas', () => {
 test('presets: bolsos batem com a grade e o rótulo mostra tudo', () => {
   for (const p of BINDER_PRESETS) eq(p.rows * p.cols, p.pockets, p.id);
   eq(presetLabel(BINDER_PRESETS.find(p => p.id === '9x20')), '9 bolsos (3×3) · 20 folhas · 360 cartas');
+});
+
+/* ---------- Medidas da capa (biblioteca) ---------- */
+import { pageUnits, coverRatio, UNITS } from '../src/js/grid.js';
+
+test('pageUnits: página = cartas + espaços + margem', () => {
+  eq(pageUnits(3, 3), { W: 63 * 3 + 5 * 2 + 24, H: 88 * 3 + 5 * 2 + 24 });
+  eq(pageUnits(1, 1), { W: 63 + 24, H: 88 + 24 });
+});
+test('coverRatio: capa dura = página + 10 na borda de fora e 10 em cima e embaixo', () => {
+  const { W, H } = pageUnits(3, 3);
+  ok(Math.abs(coverRatio(3, 3) - (W + UNITS.HARD) / (H + 2 * UNITS.HARD)) < 1e-9);
+  ok(coverRatio(2, 3) > coverRatio(3, 3), 'menos linhas → capa mais larga que alta');
 });

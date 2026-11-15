@@ -102,7 +102,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ## Como foi verificado
 
-- 89 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores, estatísticas e compartilhamento por link.
+- 91 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores, estatísticas e compartilhamento por link.
 - Telas testadas manualmente no navegador embutido do app: álbum, virar páginas, mudar grade, escolher cor, cadastrar e buscar carta, vários álbuns, arrastar (com eventos de arrastar simulados), Coleção e Wishlist.
 - Chamadas reais às APIs de Scryfall, YGOPRODeck, TCGdex e Pokémon TCG.
 - No site publicado: página carrega, service worker ativo, 21 arquivos em cache, sem erros no console.

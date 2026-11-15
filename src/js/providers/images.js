@@ -39,14 +39,19 @@ export function probeImage(url, ms = 4000) {
   });
 }
 
-/** Devolve a lista com `image` preenchida onde foi possível achar no Scrydex. As cartas são testadas em paralelo. */
+/**
+ * Devolve a lista com `image` preenchida onde foi possível achar no Scrydex. As cartas são testadas em paralelo.
+ * - Inglês e japonês: imagem do próprio idioma.
+ * - Outros idiomas (português, coreano…): o Scrydex não tem o endereço da versão naquele idioma; usa a imagem em
+ *   **inglês** da mesma carta, se existir, e marca `imageFallback: 'en'` (a arte é a mesma; o texto da carta é em inglês).
+ */
 export async function fillMissingImages(cards, { probe = probeImage } = {}) {
   return Promise.all(cards.map(async card => {
     if (card.image || card.source !== 'pokemon') return card;
-    // Só os idiomas com endereço conhecido no Scrydex (inglês e japonês); nos outros, não arriscamos uma figura de outro idioma.
-    if (card.language && !['en', 'ja'].includes(card.language)) return card;
-    for (const url of scrydexCandidates(card.sourceId, 'small', card.language ?? 'en')) {
-      if (await probe(url)) return { ...card, image: url };
+    const lang = card.language ?? 'en';
+    const own = lang === 'en' || lang === 'ja';
+    for (const url of scrydexCandidates(card.sourceId, 'small', own ? lang : 'en')) {
+      if (await probe(url)) return own ? { ...card, image: url } : { ...card, image: url, imageFallback: 'en' };
     }
     return card;
   }));

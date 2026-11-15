@@ -102,7 +102,7 @@ body.moving .slot[data-page]{outline:2px dashed var(--accent);outline-offset:-2p
 .slot::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(120deg,#ffffff30,transparent 36%,transparent 68%,#ffffff14)}
 .slot[data-page]{cursor:pointer}
-.slot[data-page]:hover{transform:translateY(calc(-2*var(--u)))}
+.slot[data-page]:not(.filled):hover{transform:translateY(calc(-2*var(--u)))}
 .slot.filled[draggable="true"]{cursor:grab}
 .slot.dragging{opacity:.35}
 .slot.over{outline:calc(2*var(--u)) dashed var(--accent);outline-offset:calc(-2*var(--u))}
@@ -185,20 +185,26 @@ dialog#dlgCard{max-height:94vh;overflow-y:auto}
 .langhint button{padding:2px 9px;font-size:12px;border-radius:99px}
 
 /* ---- Foil (versão 1): faixas de arco-íris e inclinação enquanto o mouse ou o dedo está sobre a carta ----
+   IMPORTANTE: quem recebe o mouse é o slot, que fica PARADO. O que inclina e levanta é o .card3d lá dentro (com
+   pointer-events: none). Se o próprio alvo do mouse inclinasse, a área dele se deslocaria sob o ponteiro, o mouse
+   "sairia" da carta e o efeito ficaria piscando.
    'holo' brilha na carta toda; 'reverse' só na moldura (máscara aproximada: a janela da arte fica de fora). */
-.slot[data-foil="holo"]::before,.slot[data-foil="reverse"]::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
-  opacity:0;transition:opacity .25s;mix-blend-mode:color-dodge;
+.slot .card3d{position:absolute;inset:0;pointer-events:none;transition:transform .15s ease-out;transform-origin:50% 50%}
+.slot .card3d *{pointer-events:none}
+.slot[data-page].filled:hover .card3d{transform:translateY(calc(-2*var(--u)))}   /* o "levantar" também é do card3d */
+.slot .foil{display:none;position:absolute;inset:0;z-index:2;opacity:0;transition:opacity .25s;mix-blend-mode:color-dodge;
   background:repeating-linear-gradient(115deg,#ff7773 0%,#ffed5f 10%,#a8ff5f 20%,#83fff7 30%,#7894ff 40%,#d875ff 50%,#ff7773 60%) var(--bx,50%) var(--by,50%)/300% 300%;
   filter:brightness(.42) contrast(1.5) saturate(1.6)}
-.slot[data-foil="reverse"]::before{
+.slot[data-foil="holo"] .foil,.slot[data-foil="reverse"] .foil{display:block}
+.slot[data-foil="reverse"] .foil{
   -webkit-mask:linear-gradient(#000,#000),linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;
   -webkit-mask-size:100% 100%,84% 39%;mask-size:100% 100%,84% 39%;
   -webkit-mask-position:0 0,8% 11%;mask-position:0 0,8% 11%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
-.slot.foiling[data-foil="holo"]::before,.slot.foiling[data-foil="reverse"]::before{opacity:.42}
-.slot.foiling[data-foil="holo"],.slot.foiling[data-foil="reverse"]{
+.slot.foiling .foil{opacity:.42}
+.slot.foiling[data-foil="holo"] .card3d,.slot.foiling[data-foil="reverse"] .card3d{
   transform:translateY(calc(-2*var(--u))) perspective(calc(420*var(--u))) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .06s linear}
 .slot::after{z-index:3}
-.slot.missing::before{display:none}                 /* carta que ainda não tenho: cinza, sem foil */
-#stage.foil-off .slot::before{display:none}         /* desligado nas configurações */
-#stage.foil-off .slot.foiling{transform:translateY(calc(-2*var(--u)))}
-@media (prefers-reduced-motion:reduce){.slot[data-foil]::before{display:none}.slot.foiling{transform:translateY(calc(-2*var(--u)))!important}}
+.slot.missing .foil{display:none}                    /* carta que ainda não tenho: cinza, sem foil */
+#stage.foil-off .slot .foil{display:none}            /* desligado nas configurações */
+#stage.foil-off .slot.foiling .card3d{transform:translateY(calc(-2*var(--u)))}
+@media (prefers-reduced-motion:reduce){.slot .foil{display:none!important}.slot.foiling .card3d{transform:translateY(calc(-2*var(--u)))!important}}

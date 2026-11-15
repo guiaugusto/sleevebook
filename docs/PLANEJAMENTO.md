@@ -54,7 +54,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 ### v0.1 · MVP
 
 - ✅ Criar álbum com linhas × colunas e número de páginas ([#19](https://github.com/guiaugusto/sleevebook/pull/19), [#20](https://github.com/guiaugusto/sleevebook/pull/20))
-- ✅ Folhear em visual de livro: botões, teclado, deslizar, salto para página ([#20](https://github.com/guiaugusto/sleevebook/pull/20))
+- ✅ Folhear em visual de fichário: começa fechado, abre com a capa de dentro à esquerda e a página 1 à direita, bolsos de plástico sobre o fundo da cor do álbum, sem texto sobre as cartas (botões, teclado, deslizar, salto para página) ([#20](https://github.com/guiaugusto/sleevebook/pull/20))
 - ✅ Cor do álbum por roda de cores, luminosidade, hexadecimal e cores prontas ([#21](https://github.com/guiaugusto/sleevebook/pull/21))
 - ✅ Cadastrar carta por slot: nome, set, número, condição, quantidade, preço, notas, imagem por URL ou envio ([#21](https://github.com/guiaugusto/sleevebook/pull/21))
 - ✅ Salvar no navegador, exportar e importar JSON, com mesclar ou substituir ([#19](https://github.com/guiaugusto/sleevebook/pull/19), [#20](https://github.com/guiaugusto/sleevebook/pull/20))
@@ -94,7 +94,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ## Como foi verificado
 
-- 58 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
+- 60 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
 - Telas testadas manualmente no navegador embutido do app: álbum, virar páginas, mudar grade, escolher cor, cadastrar e buscar carta, vários álbuns, arrastar (com eventos de arrastar simulados), Coleção e Wishlist.
 - Chamadas reais às APIs de Scryfall, YGOPRODeck, TCGdex e Pokémon TCG.
 - No site publicado: página carrega, service worker ativo, 21 arquivos em cache, sem erros no console.

@@ -61,18 +61,30 @@ export const INK_DARK = '#14161f';
 export const DEFAULT_COLOR = '#2c3e8f';
 export const SWATCHES = ['#2c3e8f', '#8f2c3e', '#1f7a5a', '#6b3fa0', '#c2570c', '#222831', '#b8860b', '#0f7c8a'];
 
-/** Tema completo do álbum a partir da cor base. */
+/** Muda a luminosidade de uma cor, mantendo matiz e saturação. */
+function withLightness(hex, l) {
+  const [h, s] = hexToHsl(hex);
+  return hslToHex(h, s, Math.min(94, Math.max(5, l)));
+}
+
+/**
+ * Tema completo do álbum a partir da cor base (um fichário: tudo é da cor dele).
+ * - base: capa de fora.
+ * - page: fundo das páginas, quase igual à capa (um tom que se afasta do extremo mais próximo).
+ * - inside: capa de dentro, um pouco mais fechada que as páginas.
+ * - ink: texto da capa, branco ou escuro conforme o contraste.
+ */
 export function deriveTheme(input) {
   const base = normalizeHex(input) ?? DEFAULT_COLOR;
-  const [h, s] = hexToHsl(base);
-  const tint = Math.min(s, 40);
+  const l = hexToHsl(base)[2];
+  const dark = l < 50;
   const ink = contrast(base, INK_LIGHT) >= contrast(base, INK_DARK) ? INK_LIGHT : INK_DARK;
   return {
     base,
     ink,
     contrast: contrast(base, ink),
-    paper: hslToHex(h, tint * 0.5, 92),
-    pocket: hslToHex(h, tint * 0.55, 83),
+    page: withLightness(base, dark ? l + 5 : l - 5),
+    inside: withLightness(base, dark ? l - 4 : l - 10),
   };
 }
 
@@ -81,7 +93,7 @@ export function applyTheme(el, input) {
   const t = deriveTheme(input);
   el.style.setProperty('--alb', t.base);
   el.style.setProperty('--alb-ink', t.ink);
-  el.style.setProperty('--paper', t.paper);
-  el.style.setProperty('--pocket', t.pocket);
+  el.style.setProperty('--page', t.page);
+  el.style.setProperty('--inside', t.inside);
   return t;
 }

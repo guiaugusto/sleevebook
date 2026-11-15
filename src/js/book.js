@@ -1,34 +1,38 @@
-// Visual de livro: folhas com frente e verso que viram em 3D.
-// Cada folha tem duas páginas (1/2, 3/4…). Virar = girar 180° em torno da lombada.
-import { sheetCount, slotKey, visiblePages, countByPage, spreadForPage, clamp } from './grid.js';
-
-/** Abaixo desta largura o livro mostra uma página por vez. */
-export const SINGLE_PAGE_MAX_WIDTH = 700;
+// Fichário: começa fechado (capa de fora). Ao abrir, a capa de dentro fica à esquerda e a página 1 à direita.
+// Cada folha tem frente e verso e vira em 3D em torno da lombada. A capa e a contracapa são folhas "duras",
+// um pouco maiores que as páginas. As páginas têm bolsos de plástico sobre o fundo da cor do álbum.
+import { totalSheets, sheetCount, slotKey, visiblePages, spreadForPage, clamp } from './grid.js';
 import { esc } from './util.js';
 
 const FLIP_MS = 800;
 const STAGGER_MS = 60;
 
+// Medidas em "unidades" (a carta tem 63×88). O CSS usa as mesmas.
+const GAP = 5, PAD = 12, HARD = 10, CARD_W = 63, CARD_H = 88;
+
+/** Abaixo desta largura o livro mostra uma página por vez. */
+export const SINGLE_PAGE_MAX_WIDTH = 700;
+
 export function createBook(stage, handlers = {}) {
   const el = stage.querySelector('#book');
   let data = null;      // { album, slots: Map, cards: Map }
-  let spread = 0;       // quantas folhas já foram viradas
+  let spread = 0;       // quantas folhas já foram viradas (0 = fechado)
   let side = 'right';   // no modo de uma página: qual lado do livro está em foco
   let timers = [];
   let wasSingle = null;
 
   const isSingle = () => stage.clientWidth < SINGLE_PAGE_MAX_WIDTH;
   const pages = () => data.album.pages;
-
-  /** Página em foco (modo de uma página) ou a da direita/esquerda visível. */
-  function curPage() {
-    if (spread === 0) return 1;
-    const [l, r] = visiblePages(spread, pages());
-    return side === 'left' ? (l ?? r) : (r ?? l) ?? 1;
-  }
-
+  const total = () => (data ? totalSheets(pages()) : 0);
   const sheets = () => [...el.querySelectorAll('.sheet')];
-  const total = () => (data ? sheetCount(data.album.pages) : 0);
+
+  /** Posição em foco no modo de uma página: 0 = capa, 1..N = páginas, N+1 = contracapa. */
+  function curPos() {
+    if (spread === 0) return 0;
+    if (spread === total()) return pages() + 1;
+    const [l, r] = visiblePages(spread, pages());
+    return (side === 'left' ? (l ?? r) : (r ?? l)) ?? 1;
+  }
 
   /* ---------- HTML ---------- */
   function slotHTML(album, page, row, col) {
@@ -37,31 +41,43 @@ export function createBook(stage, handlers = {}) {
     const card = slot && data.cards.get(slot.cardId);
     const idx = row * album.cols + col + 1;
     const attrs = `data-key="${esc(key)}" data-page="${page}" data-row="${row}" data-col="${col}" role="button" tabindex="0"`;
-    if (!card) return `<div class="slot" ${attrs} aria-label="Slot ${idx} vazio"><span class="n">${idx}</span><span class="plus">+</span></div>`;
-    const sub = [card.set, card.number].filter(Boolean).join(' ');
+    if (!card) return `<div class="slot" ${attrs} aria-label="Slot ${idx} vazio"><span class="plus">+</span></div>`;
+    // Sem texto em cima da carta: os detalhes aparecem ao clicar no slot. Só cartas sem imagem mostram o nome.
     return `<div class="slot filled ${card.image ? '' : 'noimg'}" ${attrs} draggable="true" aria-label="${esc(card.name)}">
-      ${card.image ? `<img src="${esc(card.image)}" alt="" loading="lazy" draggable="false">` : ''}
-      <div class="label"><b>${esc(card.name)}</b>${sub ? `<span>${esc(sub)}</span>` : ''}</div>
-      ${card.qty > 1 ? `<span class="qty">×${card.qty}</span>` : ''}<div class="shine"></div></div>`;
+      ${card.image ? `<img src="${esc(card.image)}" alt="" loading="lazy" draggable="false">` : `<div class="label">${esc(card.name)}</div>`}
+      <div class="shine"></div></div>`;
   }
 
   function pageHTML(page) {
     const { album } = data;
     let slots = '';
     for (let r = 0; r < album.rows; r++) for (let c = 0; c < album.cols; c++) slots += slotHTML(album, page, r, c);
-    const n = countByPage(album, [...data.slots.values()])[page] || 0;
-    return `<div class="ph"><span>${esc(album.name)}</span><span>Pág. ${page} · <b class="pc" data-pc="${page}">${n}/${album.rows * album.cols}</b></span></div>
-      <div class="grid" style="grid-template-columns:repeat(${album.cols},calc(63*var(--u)))">${slots}</div>`;
+    return `<div class="grid" style="grid-template-columns:repeat(${album.cols},calc(${CARD_W}*var(--u)))">${slots}</div>`;
+  }
+
+  function sheetHTML(i, n) {
+    const P = pages(), flipped = i < spread ? ' flipped' : '';
+    if (i === 0) {
+      return `<div class="sheet hard${flipped}"><div class="face front cover-out"><div class="cover-title">${esc(data.album.name)}</div></div>
+        <div class="face back cover-in"></div></div>`;
+    }
+    if (i === n - 1) {
+      return `<div class="sheet hard${flipped}"><div class="face front cover-in"></div><div class="face back cover-out"></div></div>`;
+    }
+    const f = 2 * i - 1, b = 2 * i;
+    return `<div class="sheet${flipped}"><div class="face front">${pageHTML(f)}</div>
+      <div class="face back${b > P ? ' page-blank' : ''}">${b > P ? '' : pageHTML(b)}</div></div>`;
   }
 
   /* ---------- Tamanho ---------- */
   function layout() {
     if (!data) return;
     const { rows, cols } = data.album;
-    const W = 63 * cols + 8 * (cols - 1) + 28;          // largura da página em unidades
-    const H = 88 * rows + 8 * (rows - 1) + 28 + 24;     // altura em unidades
+    const W = CARD_W * cols + GAP * (cols - 1) + 2 * PAD;    // largura da página em unidades
+    const H = CARD_H * rows + GAP * (rows - 1) + 2 * PAD;    // altura da página
     const single = isSingle();
-    const u = Math.max(0.2, Math.min(single ? stage.clientWidth * 0.86 / W : stage.clientWidth / 2.15 / W, stage.clientHeight * 0.9 / H));
+    const fitW = single ? (W + 2 * HARD) / 0.9 : (2 * W + 2 * HARD) / 0.94;
+    const u = Math.max(0.2, Math.min(stage.clientWidth / fitW, stage.clientHeight * 0.9 / (H + 2 * HARD)));
     el.style.setProperty('--u', u + 'px');
     el.style.setProperty('--pw', W * u + 'px');
     el.style.setProperty('--ph', H * u + 'px');
@@ -69,22 +85,21 @@ export function createBook(stage, handlers = {}) {
     if (wasSingle !== single) { wasSingle = single; notify(); }
   }
 
-  // Na primeira página só há página direita; na última só esquerda: centraliza o que aparece.
+  // Centraliza o que está à vista: fechado mostra só a capa (direita) ou a contracapa (esquerda); no modo de
+  // uma página, centraliza a página em foco.
   function place() {
     const pw = parseFloat(el.style.getPropertyValue('--pw')) || 0;
-    const last = spread === total();
+    const closedFront = spread === 0, closedBack = spread === total();
     const single = isSingle();
     stage.classList.toggle('single', single);
-    el.classList.toggle('is-first', spread === 0);
-    el.classList.toggle('is-last', last && spread !== 0);
-    if (single) {
-      // Centraliza a página em foco: a direita do livro fica à direita do centro, e a esquerda, à esquerda.
+    let left;
+    if (closedFront) left = false;
+    else if (closedBack) left = true;
+    else if (single) {
       const [l, r] = visiblePages(spread, pages());
-      const left = spread !== 0 && (side === 'left' ? l !== null : r === null);
-      el.style.transform = `translateX(${left ? pw / 2 : -pw / 2}px)`;
-      return;
-    }
-    el.style.transform = spread === 0 ? `translateX(${-pw / 2}px)` : last ? `translateX(${pw / 2}px)` : 'none';
+      left = side === 'left' ? l !== null : r === null;
+    } else { el.style.transform = 'none'; return; }
+    el.style.transform = `translateX(${left ? pw / 2 : -pw / 2}px)`;
   }
 
   function settleZ() {
@@ -99,13 +114,8 @@ export function createBook(stage, handlers = {}) {
     spread = Math.min(spread, total());
     el.classList.add('no-anim');
     const n = total();
-    let html = '<div class="cover"></div>';
-    for (let i = 0; i < n; i++) {
-      const f = 2 * i + 1, b = 2 * i + 2;
-      html += `<div class="sheet${i < spread ? ' flipped' : ''}">
-        <div class="face front">${pageHTML(f)}</div>
-        <div class="face back${b > data.album.pages ? ' blank' : ''}">${b > data.album.pages ? 'fim' : pageHTML(b)}</div></div>`;
-    }
+    let html = '';
+    for (let i = 0; i < n; i++) html += sheetHTML(i, n);
     el.innerHTML = html;
     settleZ();
     layout();
@@ -113,66 +123,65 @@ export function createBook(stage, handlers = {}) {
     notify();
   }
 
-  /** Redesenha só o slot indicado (sem refazer o livro inteiro) e atualiza a contagem das páginas. */
+  /** Redesenha só o slot indicado, sem refazer o livro inteiro. */
   function updateSlot(key) {
     if (!data) return;
     for (const s of el.querySelectorAll('.slot[data-key]')) {
       if (s.dataset.key === key) s.outerHTML = slotHTML(data.album, +s.dataset.page, +s.dataset.row, +s.dataset.col);
     }
-    refreshCounts();
-  }
-
-  /** Contagem "cartas/slots" de cada página (frente e verso contam separado). */
-  function refreshCounts() {
-    const counts = countByPage(data.album, [...data.slots.values()]), per = data.album.rows * data.album.cols;
-    for (const b of el.querySelectorAll('.pc')) b.textContent = `${counts[b.dataset.pc] || 0}/${per}`;
   }
 
   function notify() {
-    handlers.onSpread?.(spread, visiblePages(spread, pages()), total(), { single: isSingle(), page: curPage(), pages: pages() });
+    handlers.onSpread?.(spread, visiblePages(spread, pages()), total(), { single: isSingle(), pos: curPos(), pages: pages() });
   }
 
   /* ---------- Virar páginas ---------- */
   function goTo(target, nextSide = null) {
     if (!data) return;
-    target = Math.max(0, Math.min(total(), target));
+    target = clamp(target, 0, total());
     if (nextSide) side = nextSide;
     if (target === spread) { place(); notify(); return; }   // mesma folha: só desliza para o outro lado
     timers.forEach(clearTimeout); timers = [];
     const dir = target > spread ? 1 : -1, n = total(), all = sheets();
     const moving = [];
     for (let i = spread; i !== target; i += dir) moving.push(dir > 0 ? i : i - 1);
-    // Estado final já vale para o resto do app; a animação só acompanha.
+    // O estado final já vale para o resto do app; a animação só acompanha.
     spread = target;
     place(); notify();
     moving.forEach((idx, k) => {
       const sh = all[idx], delay = k * STAGGER_MS;
-      const at = (ms, fn) => timers.push(setTimeout(fn, ms));
-      at(delay, () => { sh.style.zIndex = 1000 + (dir > 0 ? n - idx : idx); sh.classList.toggle('flipped', dir > 0); });
-      at(delay + FLIP_MS / 2, () => { sh.style.zIndex = 1000 + (dir > 0 ? idx : n - idx); });
+      timers.push(setTimeout(() => { sh.style.zIndex = 1000 + (dir > 0 ? n - idx : idx); sh.classList.toggle('flipped', dir > 0); }, delay));
+      timers.push(setTimeout(() => { sh.style.zIndex = 1000 + (dir > 0 ? idx : n - idx); }, delay + FLIP_MS / 2));
     });
-    at_end(moving.length * STAGGER_MS + FLIP_MS + 50);
-    function at_end(ms) { timers.push(setTimeout(settleZ, ms)); }
+    timers.push(setTimeout(settleZ, moving.length * STAGGER_MS + FLIP_MS + 50));
   }
 
-  /** Mostra a página `p`: vira a folha necessária e, no modo de uma página, centraliza o lado certo. */
+  /** Mostra a página `p` (abre o livro se estiver fechado). */
   function showPage(p) {
     if (!data) return;
     p = clamp(p, 1, pages());
     goTo(spreadForPage(p), p % 2 ? 'right' : 'left');
   }
 
+  /** Fecha o livro mostrando a capa. */
+  function showCover() { goTo(0, 'right'); }
+
   /** Avança ou volta: uma página no modo de uma página, uma folha (duas páginas) no modo livro. */
   function step(dir) {
     if (!data) return;
-    if (isSingle()) showPage(curPage() + dir);
-    else goTo(spread + dir);
+    if (!isSingle()) { goTo(spread + dir); return; }
+    const v = clamp(curPos() + dir, 0, pages() + 1);
+    if (v === 0) goTo(0, 'right');
+    else if (v === pages() + 1) goTo(total(), 'left');
+    else showPage(v);
   }
 
   /* ---------- Entrada do usuário ---------- */
   el.addEventListener('click', e => {
     const s = e.target.closest('.slot[data-page]');
-    if (s) handlers.onSlot?.({ key: s.dataset.key, page: +s.dataset.page, row: +s.dataset.row, col: +s.dataset.col });
+    if (s) { handlers.onSlot?.({ key: s.dataset.key, page: +s.dataset.page, row: +s.dataset.row, col: +s.dataset.col }); return; }
+    // Clicar na capa fechada abre o fichário.
+    if (spread === 0 && e.target.closest('.cover-out')) step(1);
   });
   el.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -245,9 +254,11 @@ export function createBook(stage, handlers = {}) {
     layout,
     goTo,
     showPage,
+    showCover,
     next: () => step(1),
     prev: () => step(-1),
     get spread() { return spread; },
     get sheets() { return total(); },
+    get pageSheets() { return sheetCount(data ? pages() : 0); },
   };
 }

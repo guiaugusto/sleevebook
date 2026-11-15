@@ -60,10 +60,13 @@ docs/               planejamento, ADRs e mockups
 
 ## Documentação
 
+A documentação completa, por assunto, está em [docs/](docs/README.md): [visão geral](docs/01-visao-geral.md), [arquitetura](docs/02-arquitetura.md), [decisões](docs/03-decisoes.md), [web e mobile](docs/04-web-e-mobile.md), [compartilhamento](docs/05-compartilhamento.md), [segurança e privacidade](docs/06-seguranca-e-privacidade.md) e [operação](docs/07-operacao.md).
+
 - [Planejamento e roadmap](docs/PLANEJAMENTO.md)
 - [Decisões técnicas (ADRs)](docs/adr)
 - [Mockups do planejamento](docs/mockups/planejamento.html)
 - [Como contribuir](CONTRIBUTING.md)
+- [Política de segurança](SECURITY.md)
 
 ## Licença
 

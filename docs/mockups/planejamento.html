@@ -1,0 +1,403 @@
+<title>Planejamento do Álbum TCG</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: página de documento com navegação fixa no topo; mockups em "molduras" de tela dentro das seções */
+:root{
+  --bg:#f4f5f8; --surface:#ffffff; --ink:#161922; --muted:#5d6475; --line:#dfe2ea;
+  --accent:#3550d6; --accent-ink:#ffffff; --good:#1b8a5a; --warn:#b7791f; --bad:#c0392b;
+  --paper:#eef0f5; --pocket:#dde1ea; --stage:#1a1e2b;
+  --f-head:'Space Grotesk',system-ui,sans-serif; --f-body:'Inter',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1117; --surface:#181b25; --ink:#e8eaf2; --muted:#98a0b4; --line:#2a2f3d;
+  --accent:#7d94ff; --accent-ink:#0b1030; --good:#4cc790; --warn:#e0a94a; --bad:#ff8a7a;
+  --paper:#d9dce6; --pocket:#c3c8d6; --stage:#0b0d14; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1117; --surface:#181b25; --ink:#e8eaf2; --muted:#98a0b4; --line:#2a2f3d;
+  --accent:#7d94ff; --accent-ink:#0b1030; --good:#4cc790; --warn:#e0a94a; --bad:#ff8a7a;
+  --paper:#d9dce6; --pocket:#c3c8d6; --stage:#0b0d14; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-head);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,5vw,42px);letter-spacing:-.02em}
+h2{font-size:26px;letter-spacing:-.01em;margin-bottom:6px}
+h3{font-size:16px;margin-bottom:6px}
+p{margin:0 0 10px;max-width:68ch}
+.lead{color:var(--muted);font-size:17px;max-width:62ch}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+header.top{padding-block:40px 20px}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:4px;overflow-x:auto;padding-block:8px}
+nav.tabs a{color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:8px;white-space:nowrap;font-weight:500;font-size:14px}
+nav.tabs a:hover,nav.tabs a:focus-visible{background:var(--surface);color:var(--ink);outline:2px solid var(--accent);outline-offset:-2px}
+section{padding-block:36px 12px;scroll-margin-top:52px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid currentColor}
+.pill.good{color:var(--good)}.pill.warn{color:var(--warn)}.pill.bad{color:var(--bad)}.pill.acc{color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.scroll table{min-width:640px}
+code,pre{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto;margin:10px 0}
+ul.clean{margin:6px 0 0;padding-left:18px}ul.clean li{margin-bottom:4px}
+.note{border-left:3px solid var(--accent);padding:6px 12px;color:var(--muted);margin:12px 0;max-width:68ch}
+
+/* Mockups */
+.shot{margin-top:16px}
+.shot figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:70ch}
+.screen{background:var(--stage);border-radius:14px;padding:18px;border:1px solid var(--line);overflow:hidden}
+.bar{display:flex;gap:8px;align-items:center;color:#c8cde0;font-size:12px;margin-bottom:14px;flex-wrap:wrap}
+.bar b{flex:1;font-family:var(--f-head);font-size:14px;color:#fff;min-width:100px}
+.chip{background:#ffffff14;border:1px solid #ffffff22;color:#e4e8f6;border-radius:8px;padding:4px 10px;font-size:12px}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.spread{display:flex;justify-content:center;gap:2px;perspective:1600px}
+.pg{background:var(--paper);width:min(44%,300px);padding:10px;border-radius:3px;box-shadow:0 10px 30px #0007;min-width:0}
+.pg:first-child{border-radius:6px 2px 2px 6px;transform:rotateY(3deg)}
+.pg:last-child{border-radius:2px 6px 6px 2px;transform:rotateY(-3deg)}
+.pg small{display:flex;justify-content:space-between;color:#6b7186;font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.slots{display:grid;gap:5px}
+.sl{aspect-ratio:63/88;background:var(--pocket);border-radius:3px;position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px #0000001a}
+.sl.f{box-shadow:0 2px 5px #0005}
+.sl.f i{position:absolute;inset:0}
+.sl.f span{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,#000b);color:#fff;font-size:8px;padding:8px 4px 3px;line-height:1.1;font-style:normal}
+.sl.e::after{content:"+";position:absolute;inset:0;display:grid;place-items:center;color:#8e95aa;font-size:16px}
+.sl.sel{outline:2px solid var(--accent);outline-offset:1px}
+.pager{display:flex;justify-content:center;gap:8px;margin-top:14px}
+.binder{background:var(--alb,#2c3e8f);border-radius:12px;padding:12px 16px 18px;box-shadow:inset 0 0 0 2px #ffffff24,inset 0 -24px 40px #0003,0 12px 30px #0006;min-width:0}
+.binder .cvt{color:var(--alb-ink,#fff);font-family:var(--f-head);font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-align:center;margin-bottom:10px;opacity:.9}
+.colorrow{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-top:4px}
+#wheel{width:160px;height:160px;border-radius:50%;cursor:crosshair;touch-action:none;flex:none;box-shadow:0 0 0 1px var(--line)}
+.cside{flex:1;min-width:150px}
+.cside input[type=text]{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:13px ui-monospace,Consolas,monospace}
+.cside input[type=range]{width:100%;accent-color:var(--accent)}
+.sw{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.sw button{width:24px;height:24px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.sw button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.split{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}
+@media(max-width:700px){.split{grid-template-columns:1fr}}
+.panel{background:var(--surface);color:var(--ink);border-radius:10px;padding:14px;font-size:13px;min-width:0}
+.panel label{display:block;font-size:11px;color:var(--muted);margin:8px 0 2px}
+.fld{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--bg);min-height:30px}
+.btnrow{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);border-radius:7px;padding:5px 10px;font-size:12px;background:var(--surface);color:var(--ink);cursor:pointer;font-family:inherit}
+.btn.p{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cfg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cfg input{width:100%;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+.prevpg{background:var(--paper);padding:8px;border-radius:4px;margin-top:10px;max-width:220px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px}
+.stat{background:var(--surface);color:var(--ink);border-radius:8px;padding:10px}
+.stat b{display:block;font-family:var(--f-head);font-size:20px;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--muted)}
+.bar2{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}.bar2 i{display:block;height:100%;background:var(--accent)}
+
+/* decisões */
+.dec{display:grid;gap:12px}
+.dec fieldset{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);margin:0;min-width:0}
+.dec legend{font-weight:600;padding:0 6px}
+.dec label{display:flex;gap:8px;align-items:flex-start;padding:4px 0;cursor:pointer}
+.dec input{margin-top:4px;accent-color:var(--accent)}
+.dec small{color:var(--muted);display:block}
+footer{padding-block:40px;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Planejamento · v0.1</div>
+  <h1>Álbum TCG: planejamento do projeto</h1>
+  <p class="lead">Um álbum digital para catalogar sua coleção de cartas, com páginas que viram, grade configurável (2×2, 3×3, 4×4…) e cadastro carta por carta em cada slot. Esta página reúne nomes, escopo, telas de exemplo, estrutura do GitHub e as decisões que ainda estão abertas.</p>
+</header>
+
+<nav class="tabs" aria-label="Seções">
+  <a href="#nomes">Nomes</a><a href="#escopo">Escopo</a><a href="#telas">Telas</a><a href="#visual">Como o álbum funciona</a>
+  <a href="#tecnica">Técnica</a><a href="#github">GitHub</a><a href="#decisoes">Decisões</a>
+</nav>
+
+<!-- ============ NOMES ============ -->
+<section id="nomes">
+  <h2>Sugestões de nome</h2>
+  <p>Busquei cada nome na web (lojas de apps e ferramentas de coleção), no GitHub e no DNS de .com, .app, .io e .dev. “Sem registro DNS” indica que ninguém publicou nada naquele endereço, mas não garante que dá para registrar: confirme no registrador antes de decidir.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Nome</th><th>Ideia</th><th>Já existe?</th><th>Domínios</th><th>Parecer</th></tr></thead>
+    <tbody>
+    <tr><td><b>Sleevebook</b></td><td>“Sleeve” (capinha da carta) + book. Remete a álbum físico.</td>
+      <td>Nenhum app encontrado. 1 repositório no GitHub, 0 estrelas.</td>
+      <td>.app .io .dev sem registro; .com em uso</td><td><span class="pill good">Mais livre</span></td></tr>
+    <tr><td><b>Pocketpage</b></td><td>Cada slot é um “pocket”, cada folha é uma página.</td>
+      <td>Nenhum app de cartas. GitHub: o projeto “PocketPages” (301 estrelas) é um framework web, outra área.</td>
+      <td>.app .io .dev sem registro; .com em uso</td><td><span class="pill good">Livre, com ressalva</span></td></tr>
+    <tr><td><b>Holobinder</b></td><td>Holo (carta brilhante) + binder.</td>
+      <td>Nenhum app publicado, mas há 3 repositórios com o nome (0 estrelas), um deles scanner de cartas. Vizinhos: HoloDex, CollectHolo.</td>
+      <td>.io .dev sem registro; .com e .app em uso</td><td><span class="pill warn">Colide com repos</span></td></tr>
+    <tr><td><b>Slotbook</b></td><td>Slot + book. Curto e direto.</td>
+      <td>Nenhum app de cartas. Repos de “reserva de horário” usam o nome.</td>
+      <td>.dev sem registro; .com .app .io em uso</td><td><span class="pill warn">Domínios tomados</span></td></tr>
+    <tr><td><b>Cardfolio</b></td><td>Card + portfolio.</td>
+      <td>3 repositórios com o nome (até 25 estrelas). Vizinhos no mercado: Collectorfolio, Slabfolio.</td>
+      <td>.app sem registro; demais em uso</td><td><span class="pill warn">Genérico</span></td></tr>
+    <tr><td><b>Binderly</b></td><td>Binder + sufixo “-ly”.</td>
+      <td>Nome não encontrado, mas o espaço “Binder*” está lotado: Bindly, BinderDex, BinderIQ, Binder, TCG Binder.</td>
+      <td>Todos em uso</td><td><span class="pill bad">Evitar</span></td></tr>
+    </tbody></table></div>
+  <div class="note"><b>Decidido: Sleevebook.</b> O repositório é <a href="https://github.com/guiaugusto/sleevebook" style="color:var(--accent)">github.com/guiaugusto/sleevebook</a>. Ainda vale conferir o registro de marca (INPI) e o npm.</div>
+</section>
+
+<!-- ============ ESCOPO ============ -->
+<section id="escopo">
+  <h2>Escopo por fases</h2>
+  <p>Começar pequeno mantém o projeto concluível. Cada fase vira um milestone no GitHub.</p>
+  <div class="grid2">
+    <div class="card"><span class="pill acc">v0.1 · MVP</span><h3 style="margin-top:8px">Álbum funcional</h3>
+      <ul class="clean"><li>Criar álbum: linhas × colunas e número de páginas</li><li>Folhear em visual de livro (setas, teclado, deslizar)</li><li>Cadastrar carta por slot: nome, set, número, condição, quantidade, imagem</li><li>Cor do álbum por roda de cores ou hexadecimal, com papel, bolsos e texto adaptados</li><li>Salvar no navegador, exportar/importar JSON</li></ul></div>
+    <div class="card"><span class="pill acc">v0.2</span><h3 style="margin-top:8px">Cartas de verdade</h3>
+      <ul class="clean"><li>Buscar carta numa base pública e preencher nome, set e imagem sozinho</li><li>Vários álbuns (um por jogo ou por tema)</li><li>Mover e trocar cartas de slot (arrastar)</li><li>Frente e verso de página com contagem separada</li></ul></div>
+    <div class="card"><span class="pill acc">v0.3</span><h3 style="margin-top:8px">Coleção e dados</h3>
+      <ul class="clean"><li>Painel: total de cartas, % do set completo, faltantes</li><li>Lista e busca de toda a coleção, filtros</li><li>Valor estimado (preço de mercado opcional)</li><li>Wishlist</li></ul></div>
+    <div class="card"><span class="pill acc">v1.0+</span><h3 style="margin-top:8px">Conta e compartilhamento</h3>
+      <ul class="clean"><li>Login e sincronização entre dispositivos</li><li>Link público para mostrar o álbum a amigos</li><li>App instalável (PWA), uso offline</li><li>Scanner de carta pela câmera (talvez)</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ TELAS ============ -->
+<section id="telas">
+  <h2>Telas de exemplo</h2>
+  <p>Mockups navegáveis o suficiente para você reagir ao layout. O de configuração é interativo: mude linhas, colunas e páginas e veja a grade.</p>
+
+  <figure class="shot"><div class="screen">
+    <div class="bar"><b>Meu Álbum · Pokémon Base</b><span class="chip">87/180 slots</span><span class="chip">3×3 · 20 págs.</span><span class="chip">⚙ Configurar</span></div>
+    <div class="binder"><div class="cvt">Sleevebook · Pokémon Base</div><div class="spread" id="mSpread"></div></div>
+    <div class="pager"><span class="chip">⏮</span><span class="chip">◀</span><span class="chip">Páginas 6 | 7</span><span class="chip on">▶</span><span class="chip">⏭</span></div>
+  </div><figcaption><b>Tela 1 · Álbum aberto.</b> Livro com duas páginas, slots vazios com “+”, cartas com imagem e nome. Navegação por botões, setas do teclado e deslizar no celular. A carta selecionada abre o painel da tela 2.</figcaption></figure>
+
+  <figure class="shot"><div class="screen"><div class="split">
+    <div class="binder"><div class="cvt">Sleevebook · Pokémon Base</div><div class="spread" id="mSel"></div></div>
+    <div class="panel">
+      <h3>Pág. 7 · linha 2, coluna 2</h3>
+      <label>Buscar carta</label><div class="fld">charizard base set…</div>
+      <label>Nome</label><div class="fld">Charizard</div>
+      <div class="cfg"><div><label>Set</label><div class="fld">Base Set</div></div><div><label>Número</label><div class="fld">4/102</div></div><div><label>Qtd.</label><div class="fld">1</div></div></div>
+      <label>Condição</label><div class="fld">NM (Near Mint)</div>
+      <label>Notas</label><div class="fld">Comprada em 2019</div>
+      <div class="btnrow"><span class="btn p">Salvar</span><span class="btn">Trocar imagem</span><span class="btn" style="color:var(--bad)">Remover</span></div>
+    </div>
+  </div></div><figcaption><b>Tela 2 · Cadastro de um slot.</b> Painel lateral no computador, folha deslizante no celular. A busca preenche os campos a partir de uma base pública; tudo continua editável.</figcaption></figure>
+
+  <figure class="shot"><div class="screen"><div class="split">
+    <div class="panel">
+      <h3>Configurar álbum</h3>
+      <label for="cName">Nome</label><input id="cName" class="fld" style="width:100%;color:var(--ink)" value="Meu Álbum">
+      <div class="cfg" style="margin-top:6px">
+        <div><label for="cR">Linhas</label><input id="cR" type="number" min="1" max="6" value="3"></div>
+        <div><label for="cC">Colunas</label><input id="cC" type="number" min="1" max="6" value="3"></div>
+        <div><label for="cP">Páginas</label><input id="cP" type="number" min="1" max="200" value="20"></div>
+      </div>
+      <div class="btnrow" id="presets"></div>
+      <label style="margin-top:14px">Cor do álbum</label>
+      <div class="colorrow">
+        <canvas id="wheel" width="320" height="320" aria-label="Roda de cores: clique ou arraste para escolher"></canvas>
+        <div class="cside">
+          <label for="cL">Luminosidade</label><input id="cL" type="range" min="15" max="85" value="37">
+          <label for="cHex">Hexadecimal</label><input id="cHex" type="text" value="#2c3e8f" maxlength="7" spellcheck="false" autocomplete="off">
+          <div class="sw" id="sw" aria-label="Cores prontas"></div>
+        </div>
+      </div>
+      <p id="cNote" style="margin:10px 0 0;color:var(--muted);font-size:12px"></p>
+      <p id="cTot" style="margin:12px 0 0;color:var(--muted)"></p>
+    </div>
+    <div><div class="eyebrow" style="color:#98a0b4">Prévia de uma página</div><div class="binder" style="max-width:260px;margin-top:8px"><div class="cvt">Sleevebook</div><div class="prevpg" style="margin-top:0"><div class="slots" id="cPrev"></div></div></div></div>
+  </div></div><figcaption><b>Tela 3 · Tamanho e cor do álbum (interativo).</b> Atalhos de formato, prévia da grade e escolha de cor por roda, luminosidade, hexadecimal ou cores prontas. A cor que você escolher aqui muda a capa, o papel, os bolsos e o texto de todas as telas acima e abaixo. Ao reduzir o tamanho, as cartas fora da grade ficam guardadas em vez de apagadas.</figcaption></figure>
+
+  <figure class="shot"><div class="screen">
+    <div class="stats">
+      <div class="stat"><b>412</b><span>cartas cadastradas</span></div>
+      <div class="stat"><b>3</b><span>álbuns</span></div>
+      <div class="stat"><b>68%</b><span>Base Set completo<div class="bar2"><i style="width:68%"></i></div></span></div>
+      <div class="stat"><b>14</b><span>na wishlist</span></div>
+    </div>
+    <div class="panel"><div class="scroll" style="border:0"><table style="min-width:520px">
+      <thead><tr><th>Carta</th><th>Set</th><th>Cond.</th><th>Local</th></tr></thead>
+      <tbody><tr><td>Charizard</td><td>Base Set 4/102</td><td>NM</td><td>Álbum 1 · pág. 7 · 2,2</td></tr>
+      <tr><td>Blastoise</td><td>Base Set 2/102</td><td>LP</td><td>Álbum 1 · pág. 7 · 1,3</td></tr>
+      <tr><td>Pikachu</td><td>Jungle 60/64</td><td>NM</td><td>Álbum 1 · pág. 12 · 3,1</td></tr></tbody></table></div></div>
+  </div><figcaption><b>Tela 4 · Visão da coleção (v0.3).</b> Totais, progresso por set e uma lista pesquisável que diz exatamente em que página e slot cada carta está.</figcaption></figure>
+</section>
+
+<!-- ============ VISUAL ============ -->
+<section id="visual">
+  <h2>Como o álbum interativo funciona</h2>
+  <p>A visualização de livro se resolve em três camadas. Já testei a primeira num protótipo local, que descartei para planejar antes.</p>
+  <div class="grid2">
+    <div class="card"><h3>1 · Folhas em 3D com CSS</h3><p>Cada folha tem frente e verso (as páginas 1/2, 3/4…). Virar a folha é girar 180° em torno da lombada com <code>transform: rotateY(-180deg)</code>, e <code>backface-visibility: hidden</code> esconde o lado de trás. Sem biblioteca, leve, e dá para colocar qualquer conteúdo dentro, inclusive a grade de slots.</p></div>
+    <div class="card"><h3>2 · Tamanho que se adapta</h3><p>O tamanho da página é calculado pela grade (63×88 de cada carta mais espaçamento) e escalado para caber na tela. Por isso 2×2 e 4×4 ficam bem em qualquer janela. Capa e contracapa centralizam o livro quando só uma página aparece.</p></div>
+    <div class="card"><h3>3 · Slots clicáveis</h3><p>Cada slot é identificado por <code>página:linha:coluna</code>. Clicar abre o cadastro. Brilho ao passar o mouse e leve elevação dão a sensação de carta no bolso.</p></div>
+    <div class="card"><h3>Alternativa: biblioteca</h3><p>Uma biblioteca de page-flip dá a dobra curva da folha (mais realista), com custo de menos controle sobre o conteúdo e o redimensionamento. Dá para começar em CSS e trocar depois se você quiser o efeito.</p></div>
+  </div>
+</section>
+
+<!-- ============ TÉCNICA ============ -->
+<section id="tecnica">
+  <h2>Proposta técnica</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Tema</th><th>Recomendação</th><th>Por quê</th></tr></thead><tbody>
+    <tr><td>Front-end</td><td>Vite + TypeScript, com React ou sem framework</td><td>Build rápido, publica como site estático. React ajuda quando houver lista, filtros e painel.</td></tr>
+    <tr><td>Armazenamento</td><td>IndexedDB (via Dexie) com exportação JSON</td><td>Guarda muito mais imagens que o localStorage (limite de ~5 MB). Funciona offline e sem conta.</td></tr>
+    <tr><td>Dados de cartas</td><td>Camada de “provedores”: Pokémon TCG API, Scryfall (Magic), YGOPRODeck (Yu-Gi-Oh!)</td><td>O álbum não fica preso a um jogo. Cada provedor traduz a busca para o mesmo formato de carta.</td></tr>
+    <tr><td>Hospedagem</td><td>GitHub Pages, publicação automática por Actions</td><td>Grátis e já integrado ao repositório.</td></tr>
+    <tr><td>Depois (v1.0)</td><td>Supabase ou similar para conta e sync</td><td>Só quando houver necessidade real de multi-dispositivo.</td></tr></tbody></table></div>
+  <h3 style="margin-top:18px">Modelo de dados</h3>
+<pre>Album   { id, name, game, rows, cols, pages, createdAt }
+Slot    { albumId, page, row, col, cardId?, notes? }
+Card    { id, name, set, number, image, condition, qty, source, sourceId }
+Wishlist{ id, cardRef, priority }</pre>
+  <p>Separar <code>Slot</code> de <code>Card</code> permite mudar a grade sem perder dados e, no futuro, a mesma carta aparecer na lista da coleção e no álbum.</p>
+</section>
+
+<!-- ============ GITHUB ============ -->
+<section id="github">
+  <h2>Estrutura no GitHub</h2>
+  <div class="grid2">
+    <div class="card"><h3>Repositório</h3>
+<pre>sleevebook/
+├─ README.md          visão, prints, como rodar
+├─ docs/
+│  ├─ PLANEJAMENTO.md  decisões e roadmap
+│  ├─ mockups/         imagens das telas
+│  └─ adr/             1 arquivo por decisão técnica
+├─ src/
+│  ├─ album/           livro, folhas, slots
+│  ├─ cards/           cadastro e provedores
+│  ├─ storage/         IndexedDB, import/export
+│  └─ ui/              componentes comuns
+├─ .github/
+│  ├─ ISSUE_TEMPLATE/  bug.yml, ideia.yml
+│  ├─ workflows/       build + deploy Pages
+│  └─ pull_request_template.md
+└─ LICENSE</pre></div>
+    <div class="card"><h3>Organização do trabalho</h3>
+      <ul class="clean">
+        <li><b>Milestones:</b> v0.1 MVP, v0.2, v0.3, v1.0</li>
+        <li><b>Labels:</b> <code>album</code>, <code>cadastro</code>, <code>dados</code>, <code>ui</code>, <code>bug</code>, <code>ideia</code>, <code>decisão</code></li>
+        <li><b>Project board:</b> colunas Ideias → Planejado → Fazendo → Feito</li>
+        <li><b>Branches:</b> <code>main</code> sempre publicável; trabalho em <code>feat/…</code> e <code>fix/…</code> com PR</li>
+        <li><b>Decisões:</b> cada escolha técnica relevante vira um ADR curto em <code>docs/adr</code>, para você entender depois o porquê</li>
+        <li><b>Licença:</b> MIT, a menos que você prefira outra</li></ul></div>
+  </div>
+  <div class="note">As issues iniciais do v0.1 podem sair direto desta página: grade configurável, folhear, cadastro de slot, persistência, exportar/importar, deploy. O repositório já existe; crio as issues e os milestones quando você aprovar o plano.</div>
+</section>
+
+<!-- ============ DECISÕES ============ -->
+<section id="decisoes">
+  <h2>Decisões em aberto</h2>
+  <p>Marque o que prefere; fica salvo neste navegador e serve de base para a próxima rodada.</p>
+  <div class="dec" id="dec"></div>
+</section>
+
+<footer>Planejamento v0.1 · tamanhos de carta no padrão 63×88 mm · nada aqui foi publicado no GitHub ainda.</footer>
+</div>
+
+<script>
+const cards=[['#e5533d','#f7b733'],['#2f80ed','#56ccf2'],['#27ae60','#a8e063'],['#9b51e0','#e0a8ff'],['#f2994a','#f2c94c'],['#eb5757','#ffa4a4'],['#00a3a3','#7ee8e8']];
+const names=['Charizard','Blastoise','Venusaur','Pikachu','Mewtwo','Gengar','Alakazam','Eevee','Snorlax','Dragonite'];
+function pageHTML(n,rows,cols,seed,sel){
+  let s='';
+  for(let i=0;i<rows*cols;i++){
+    const r=(seed*7+i*5)%11, filled=r%3!==0;
+    const c=cards[(seed+i)%cards.length];
+    s+= filled
+      ? `<div class="sl f${sel===i?' sel':''}"><i style="background:linear-gradient(150deg,${c[0]},${c[1]})"></i><span>${names[(seed+i)%names.length]}</span></div>`
+      : `<div class="sl e${sel===i?' sel':''}"></div>`;
+  }
+  return `<div class="pg"><small><span>Meu Álbum</span><span>Pág. ${n}</span></small><div class="slots" style="grid-template-columns:repeat(${cols},1fr)">${s}</div></div>`;
+}
+document.getElementById('mSpread').innerHTML=pageHTML(6,3,3,2)+pageHTML(7,3,3,5);
+document.getElementById('mSel').innerHTML=pageHTML(7,3,3,5,4);
+
+const R=document.getElementById('cR'),C=document.getElementById('cC'),P=document.getElementById('cP');
+function upd(){
+  const r=Math.min(6,Math.max(1,+R.value||1)),c=Math.min(6,Math.max(1,+C.value||1)),p=Math.min(200,Math.max(1,+P.value||1));
+  const tmp=document.createElement('div');tmp.innerHTML=pageHTML(1,r,c,3);
+  document.getElementById('cPrev').outerHTML;
+  const pv=document.getElementById('cPrev');pv.style.gridTemplateColumns=`repeat(${c},1fr)`;
+  pv.innerHTML=tmp.querySelector('.slots').innerHTML;
+  document.getElementById('cTot').textContent=`${r}×${c} = ${r*c} slots por página · ${p} páginas · ${r*c*p} cartas no total`;
+}
+[R,C,P].forEach(e=>e.addEventListener('input',upd));
+document.getElementById('presets').innerHTML=[[2,2,20],[3,3,20],[3,3,30],[4,3,25],[4,4,15]]
+  .map(a=>`<button type="button" class="btn" data-a="${a}">${a[0]}×${a[1]} · ${a[2]} págs.</button>`).join('');
+document.getElementById('presets').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [R.value,C.value,P.value]=b.dataset.a.split(',');upd();
+});
+upd();
+
+/* ---- cor do álbum: roda + hex, tudo derivado de uma cor base ---- */
+const wheel=document.getElementById('wheel'),wx=wheel.getContext('2d'),W=320,RAD=W/2-4;
+const cHex=document.getElementById('cHex'),cL=document.getElementById('cL');
+let H=229,S=57,Lm=37;
+function hsl2rgb(h,s,l){s/=100;l/=100;const a=s*Math.min(l,1-l);const f=n=>{const k=(n+h/30)%12;return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1))))};return[f(0),f(8),f(4)]}
+const hex=(h,s,l)=>'#'+hsl2rgb(h,s,l).map(v=>v.toString(16).padStart(2,'0')).join('');
+function hex2hsl(x){const r=parseInt(x.substr(1,2),16)/255,g=parseInt(x.substr(3,2),16)/255,b=parseInt(x.substr(5,2),16)/255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;let h=0,s=0;
+  if(d){s=d/(1-Math.abs(2*l-1));h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360}
+  return[h,s*100,l*100]}
+const lum=x=>{const c=[1,3,5].map(i=>{const v=parseInt(x.substr(i,2),16)/255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+const contrast=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+function drawWheel(){
+  const L=Math.min(85,Math.max(15,Lm)),img=wx.createImageData(W,W);
+  for(let y=0;y<W;y++)for(let x=0;x<W;x++){
+    const dx=x-W/2,dy=y-W/2,r=Math.hypot(dx,dy);if(r>RAD+1)continue;
+    let h=Math.atan2(dy,dx)*180/Math.PI;if(h<0)h+=360;
+    const c=hsl2rgb(h,Math.min(100,r/RAD*100),L),i=(y*W+x)*4;
+    img.data[i]=c[0];img.data[i+1]=c[1];img.data[i+2]=c[2];img.data[i+3]=255}
+  wx.putImageData(img,0,0);
+  const a=H*Math.PI/180,mx=W/2+Math.cos(a)*S/100*RAD,my=W/2+Math.sin(a)*S/100*RAD;
+  wx.lineWidth=4;wx.strokeStyle='#fff';wx.beginPath();wx.arc(mx,my,11,0,7);wx.stroke();
+  wx.lineWidth=2;wx.strokeStyle='#000';wx.beginPath();wx.arc(mx,my,13,0,7);wx.stroke();
+}
+function applyColor(fromHex){
+  const base=hex(H,S,Lm),tint=Math.min(S,40);
+  const white='#ffffff',dark='#14161f',ink=contrast(base,white)>=contrast(base,dark)?white:dark,cr=contrast(base,ink);
+  document.querySelectorAll('.screen').forEach(el=>{
+    el.style.setProperty('--alb',base);el.style.setProperty('--alb-ink',ink);
+    el.style.setProperty('--paper',hex(H,tint*.5,92));el.style.setProperty('--pocket',hex(H,tint*.55,83))});
+  if(!fromHex)cHex.value=base;
+  cL.value=Math.min(85,Math.max(15,Math.round(Lm)));
+  document.getElementById('cNote').textContent=`Capa ${base} · texto da capa ${ink===white?'branco':'escuro'} (contraste ${cr.toFixed(1)}:1) · papel e bolsos recebem só um leve tom da cor, para as cartas continuarem em destaque.`;
+  drawWheel();
+  try{localStorage.setItem('album-cor',base)}catch(e){}
+}
+function pick(e){
+  const r=wheel.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W-W/2,y=(e.clientY-r.top)/r.height*W-W/2;
+  H=Math.atan2(y,x)*180/Math.PI;if(H<0)H+=360;S=Math.min(100,Math.hypot(x,y)/RAD*100);applyColor()}
+wheel.addEventListener('pointerdown',e=>{wheel.setPointerCapture(e.pointerId);pick(e)});
+wheel.addEventListener('pointermove',e=>{if(e.buttons)pick(e)});
+cL.addEventListener('input',()=>{Lm=+cL.value;applyColor()});
+cHex.addEventListener('input',()=>{let v=cHex.value.trim();if(v[0]!=='#')v='#'+v;
+  if(/^#[0-9a-f]{6}$/i.test(v)){[H,S,Lm]=hex2hsl(v.toLowerCase());applyColor(true)}});
+document.getElementById('sw').innerHTML=['#2c3e8f','#8f2c3e','#1f7a5a','#6b3fa0','#c2570c','#222831','#b8860b','#0f7c8a']
+  .map(c=>`<button type="button" style="background:${c}" data-c="${c}" aria-label="Cor ${c}"></button>`).join('');
+document.getElementById('sw').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[H,S,Lm]=hex2hsl(b.dataset.c);applyColor()});
+try{const sv=localStorage.getItem('album-cor');if(/^#[0-9a-f]{6}$/i.test(sv||''))[H,S,Lm]=hex2hsl(sv)}catch(e){}
+applyColor();
+
+/* decisões salvas no navegador */
+const DEC=[
+ ['cor','Cores do álbum',[['Livre: roda de cores + hexadecimal','o app deriva papel, bolso e texto sozinho'],['Paleta fixa de cerca de 12 cores','sempre harmoniosa, mais simples']]],
+ ['jogo','Jogos suportados no início',[['Só Pokémon','mais simples'],['Pokémon + Magic + Yu-Gi-Oh!','provedores desde o v0.2'],['Qualquer jogo, cadastro manual','sem busca automática']]],
+ ['visual','Efeito de virar página',[['CSS 3D (leve)','já testado no protótipo'],['Biblioteca com dobra curva','mais realista']]],
+ ['dados','Onde ficam os dados no início',[['Só no navegador (IndexedDB)','sem conta'],['Conta e sync desde cedo','mais trabalho']]],
+ ['idioma','Idioma da interface',[['Português','fixo'],['Português e inglês','pronto para público maior']]],
+ ['repo','Visibilidade do repositório',[['Público','mostra o projeto'],['Privado até o v0.1','publica depois']]]
+];
+const box=document.getElementById('dec');
+let saved={};try{saved=JSON.parse(localStorage.getItem('album-dec')||'{}')}catch(e){}
+box.innerHTML=DEC.map(([k,t,o])=>`<fieldset><legend>${t}</legend>${o.map(([v,d])=>`<label><input type="radio" name="${k}" value="${v}" ${saved[k]===v?'checked':''}><span>${v}<small>${d}</small></span></label>`).join('')}</fieldset>`).join('');
+box.addEventListener('change',e=>{saved[e.target.name]=e.target.value;try{localStorage.setItem('album-dec',JSON.stringify(saved))}catch(e){}});
+</script>

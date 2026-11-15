@@ -1,0 +1,20 @@
+name: Bug
+description: Algo não funciona como deveria
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: O que aconteceu
+      description: Descreva o problema e o que você esperava.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Como reproduzir
+      placeholder: "1. Abra o álbum\n2. Clique no slot…"
+  - type: input
+    id: env
+    attributes:
+      label: Navegador e dispositivo

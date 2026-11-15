@@ -2,7 +2,7 @@
 // Arquivos do próprio site: tenta a rede primeiro (para você sempre ver a versão mais nova) e cai no cache se estiver offline.
 // Requisições para outros sites (busca de cartas, imagens das cartas) passam direto; offline, a busca avisa que não deu.
 // Ao criar um módulo novo em src/, inclua o arquivo em SHELL para ele funcionar offline.
-const CACHE = 'sleevebook-v7';
+const CACHE = 'sleevebook-v8';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'icon.svg',
   'src/css/app.css',

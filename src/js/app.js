@@ -18,7 +18,8 @@ import { renderWishlist, initWishlistDialog } from './wishlist.js';
 import { firstEmptySlot } from './grid.js';
 import { $, uid, toast, downloadJSON, slug } from './util.js';
 
-const state = { albums: [], album: null, slots: new Map(), cards: new Map() };
+// `preview`: um álbum recebido por link, só para ver. Ele vive só na memória (não é gravado) até a pessoa pedir para adicioná-lo.
+const state = { albums: [], album: null, slots: new Map(), cards: new Map(), preview: null };
 let book;
 
 /* ---------- Dados ---------- */
@@ -255,6 +256,7 @@ function wireCards() {
   app.form = form;
   const search = initSearch({ onPick: data => form.fill(data), getGame: () => state.album.game });
   app.onSlot = slot => {
+    if (state.preview) { const r = state.slots.get(slot.key); if (r) peekCard(state.cards.get(r.cardId)); return; }   // álbum compartilhado: só leitura
     if (movingFrom) { finishMove(slot); return; }
     const rec = state.slots.get(slot.key);
     form.open(slot, rec && state.cards.get(rec.cardId), { beforeOpen: search.reset });
@@ -278,18 +280,76 @@ function applyView(name) {
   }
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.view === name || (name === 'album' && b.dataset.view === 'library')));
   $('#albumTools').hidden = name !== 'album';
+  // Álbum compartilhado: só ver. Esconde Compartilhar e Configurar e mostra as opções de adicionar à biblioteca.
+  const previewing = !!state.preview && name === 'album';
+  $('#btnShare').hidden = $('#btnSettings').hidden = previewing;
+  $('#btnAddShared').hidden = $('#previewBar').hidden = !previewing;
   // O título mostra o nome do álbum só dentro dele; nas outras telas é o nome do app.
   $('#title').textContent = name === 'album' && state.album ? state.album.name : 'Sleevebook';
   document.title = name === 'album' && state.album ? `${state.album.name} · Sleevebook` : 'Sleevebook';
-  history.replaceState(null, '', VIEWS[name] || location.pathname);
+  // Durante a visualização o endereço continua sendo o do link, para recarregar ou copiar a página.
+  history.replaceState(null, '', previewing ? state.preview.hash : VIEWS[name] || location.pathname);
 }
 
 async function showView(name) {
+  if (state.preview && name !== 'album') await leavePreview();
   applyView(name);
   if (name === 'album') book.layout();
   if (name === 'library') await renderLibraryView();
   if (name === 'collection') await renderCollectionView();
   if (name === 'wishlist') await renderWishlistView();
+}
+
+/* ---------- Álbum compartilhado (só para ver) ---------- */
+const FOIL_LABEL = { holo: 'Holo', reverse: 'Reverse holo', none: 'Sem foil' };
+
+/** Mostra uma carta do álbum compartilhado, só leitura. */
+function peekCard(card) {
+  if (!card) return;
+  $('#pkName').textContent = card.name;
+  $('#pkImg').style.backgroundImage = card.image ? `url("${card.image}")` : 'none';
+  $('#pkInfo').textContent = [
+    [card.set, card.number && `nº ${card.number}${card.setTotal ? `/${card.setTotal}` : ''}`].filter(Boolean).join(' · '),
+    card.owned === false ? 'Ainda não tem esta carta' : `Condição: ${card.condition} · Quantidade: ${card.qty}`,
+    FOIL_LABEL[card.foil] && `Foil: ${FOIL_LABEL[card.foil]}`,
+    card.notes && `Notas: ${card.notes}`,
+  ].filter(Boolean).join('\n');
+  $('#dlgPeek').showModal();
+}
+
+/** Abre o álbum recebido por link para visualização. Nada é gravado. */
+async function enterPreview(got, hash) {
+  state.preview = { ...got, hash };
+  state.album = got.album;
+  state.slots = new Map(got.slots.map(s => [s.key, s]));
+  state.cards = new Map(got.cards.map(c => [c.id, c]));
+  draw({ reset: true });
+  await showView('album');
+}
+
+/** Sai da visualização e volta ao álbum que estava aberto antes. */
+async function leavePreview() {
+  if (!state.preview) return;
+  state.preview = null;
+  await loadAlbum();
+}
+
+let adding = false;
+/** Só aqui o álbum compartilhado entra na biblioteca (como álbum novo, com ids novos). */
+async function addPreviewToLibrary() {
+  const p = state.preview;
+  if (!p || adding) return;
+  adding = true;
+  try {
+    await db.put('albums', p.album);
+    await db.putMany('cards', p.cards);
+    await db.putMany('slots', p.slots);
+    state.preview = null;
+    await switchAlbum(p.album.id);
+    applyView('album');
+    book.layout();
+    toast(`"${p.album.name}" adicionado à biblioteca`);
+  } finally { adding = false; }
 }
 
 /* ---------- Biblioteca de fichários ---------- */
@@ -329,6 +389,7 @@ async function openAlbumFromLibrary(album, coverEl) {
 /** Volta para a prateleira: fecha o fichário e a capa "se afasta" até o lugar dela. */
 async function backToLibrary() {
   if (view !== 'album' || transitioning) return;
+  if (state.preview) { await showView('library'); return; }       // o álbum compartilhado não está na prateleira: sem animação
   transitioning = true;
   try {
     if (book.spread !== 0) { book.goTo(0); await wait(reduceMotion() ? 0 : 1000); }   // fecha o fichário antes
@@ -422,7 +483,7 @@ async function detectFoil(key) {
   try {
     const foil = await fetchFoil(card.sourceId, card.language ?? 'en');
     const saved = { ...card, foil: foil ?? 'none' };
-    await db.put('cards', saved);
+    if (!state.preview) await db.put('cards', saved);       // álbum compartilhado: só na memória
     state.cards.set(saved.id, saved);
     book.updateSlot(key);
   } catch { foilTried.delete(card.id); }     // sem rede ou carta que o TCGdex não conhece: tenta de novo numa próxima vez
@@ -437,7 +498,7 @@ async function repairSlotImage(key) {
   const fixed = await repairImage(card);
   if (!fixed.image) return;
   const saved = { ...card, image: fixed.image, imageFallback: fixed.imageFallback, updatedAt: Date.now() };
-  await db.put('cards', saved);
+  if (!state.preview) await db.put('cards', saved);       // álbum compartilhado: só na memória
   state.cards.set(saved.id, saved);
   book.updateSlot(key);
 }
@@ -445,7 +506,7 @@ async function repairSlotImage(key) {
 /** Move a carta de `from` para `to`; se `to` já tem carta, as duas trocam de lugar. */
 export async function moveCard(from, to) {
   const a = state.slots.get(from), b = state.slots.get(to);
-  if (!a || from === to) return;
+  if (!a || from === to || state.preview) return;          // álbum compartilhado é só para ver
   const at = (key, cardId) => ({ key, albumId: state.album.id, ...parseSlotKey(key), cardId });
   const toRec = at(to, a.cardId);
   if (b) {
@@ -487,6 +548,7 @@ function wireBackup() {
     $('#dlgImport').close();
     await importAll(pending, mode);
     pending = null;
+    state.preview = null;                 // se havia um álbum compartilhado aberto, a tela volta aos dados importados
     await loadAlbum();
     draw();
     toast('Backup importado');
@@ -543,31 +605,18 @@ function wireShare() {
     catch (err) { toast(err.message); }
   };
 
-  // Receber: o link abre o app com o álbum no fragmento. Mostra o que chegou e só importa se a pessoa aceitar.
-  let incoming = null;
-  const close = () => { incoming = null; $('#dlgReceive').close(); };
-  $('#rcCancel').onclick = close;
-  $('#rcImport').onclick = async () => {
-    const got = incoming;
-    close();
-    await db.put('albums', got.album);
-    await db.putMany('cards', got.cards);
-    await db.putMany('slots', got.slots);
-    await switchAlbum(got.album.id);
-    await showView('album');
-    toast(`"${got.album.name}" adicionado à biblioteca`);
-  };
+  // Receber: o link abre o app com o álbum no fragmento e ele é mostrado para visualização. Nada é gravado
+  // até a pessoa clicar em "Adicionar à biblioteca" (no aviso do topo ou na barra do álbum).
+  $('#pvAdd').onclick = $('#btnAddShared').onclick = addPreviewToLibrary;
+  $('#pkClose').onclick = () => $('#dlgPeek').close();
   return async hash => {
     const short = isShortHash(hash);
     if (!short && !shareFromHash(hash)) return;
-    history.replaceState(null, '', location.pathname);       // o link não fica no histórico nem é reaberto ao recarregar
     try {
       if (short && !SHORTLINK_API) throw new Error('Este link curto precisa do serviço de links curtos, que não está ligado neste site.');
-      incoming = short ? await readShortLink(SHORTLINK_API, hash) : await readShareLink(hash);
-    } catch (err) { toast(err.message); return; }
-    const { album, cards } = incoming, sheets = pagesToSheets(album.pages);
-    $('#rcInfo').textContent = `"${album.name}": ${cards.length} ${cards.length === 1 ? 'carta' : 'cartas'}, fichário de ${album.cols}×${album.rows} bolsos com ${sheets} folhas.`;
-    $('#dlgReceive').showModal();
+      const got = short ? await readShortLink(SHORTLINK_API, hash) : await readShareLink(hash);
+      await enterPreview(got, hash);
+    } catch (err) { history.replaceState(null, '', location.pathname); toast(err.message); }
   };
 }
 

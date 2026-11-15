@@ -1,8 +1,9 @@
 import { test, eq, ok } from './run.js';
 import * as pokemon from '../src/js/providers/pokemon.js';
+import { mergeResults, sameCard } from '../src/js/providers/pokemon.js';
 import * as scryfall from '../src/js/providers/scryfall.js';
 import * as yugioh from '../src/js/providers/yugioh.js';
-import { searchCards, hasSearch, GAMES } from '../src/js/providers/index.js';
+import { searchCards, hasSearch, GAMES, refineResults } from '../src/js/providers/index.js';
 
 test('Pokémon: normaliza carta com preço e total do set', () => {
   const [c] = pokemon.normalize({ data: [{ id: 'base1-4', name: 'Charizard', number: '4', set: { name: 'Base', printedTotal: 102 },
@@ -37,6 +38,37 @@ test('Yu-Gi-Oh!: pega o primeiro set e converte o preço', () => {
 });
 test('respostas vazias não quebram', () => {
   for (const p of [pokemon, scryfall, yugioh]) { eq(p.normalize({}), []); eq(p.normalize(null), []); }
+});
+test('Pokémon: junta as duas fontes sem repetir a mesma carta', () => {
+  const main = [{ name: 'Turtwig', set: 'Temporal Forces', number: '10/162', image: 'a' }];
+  const extra = [
+    { name: 'Turtwig', set: 'Temporal Forces', number: '010/162', image: 'b' },      // mesma carta (zero à esquerda)
+    { name: 'Turtwig', set: 'MEP Black Star Promos', number: '040', image: '' },    // só existe na segunda fonte
+    { name: 'Turtwig', set: 'Diamond & Pearl', number: '10/130', image: 'c' },      // mesmo número, outro set
+  ];
+  const r = mergeResults(main, extra);
+  eq(r.map(c => c.set), ['Temporal Forces', 'MEP Black Star Promos', 'Diamond & Pearl']);
+  eq(r[0].image, 'a');   // a primeira fonte tem prioridade
+});
+test('Pokémon: sameCard tolera nome de set com prefixo e ignora acento', () => {
+  ok(sameCard({ name: 'Pikachu', set: 'Ultra Prism', number: '60' }, { name: 'PIKACHU', set: 'Sun & Moon Ultra Prism', number: '060' }));
+  ok(!sameCard({ name: 'Pikachu', set: 'A', number: '1' }, { name: 'Raichu', set: 'A', number: '1' }));
+});
+test('refineResults filtra por set ou número e ignora acento e caixa', () => {
+  const list = [
+    { name: 'Turtwig', set: 'MEP Black Star Promos', number: '040' },
+    { name: 'Turtwig', set: 'Diamond & Pearl', number: '103' },
+    { name: 'Turtwig', set: 'Platinum', number: '131' },
+  ];
+  eq(refineResults(list, ['040']).map(c => c.set), ['MEP Black Star Promos']);
+  eq(refineResults(list, ['mep']).length, 1);
+  eq(refineResults(list, ['PLATINUM']).map(c => c.number), ['131']);
+  eq(refineResults(list, ['mep', '040']).length, 1);
+});
+test('refineResults devolve tudo quando nada combina', () => {
+  const list = [{ name: 'A', set: 'S', number: '1' }, { name: 'B', set: 'T', number: '2' }];
+  eq(refineResults(list, ['xyz']).length, 2);
+  eq(refineResults(list, []).length, 2);
 });
 test('searchCards ignora buscas curtas e jogos sem provedor', async () => {
   eq(await searchCards('pokemon', 'a'), []);

@@ -26,7 +26,7 @@ Um álbum digital para catalogar coleções de cartas TCG, no formato de um álb
 | Stack | HTML, CSS e módulos ES, sem build | [ADR 0001](adr/0001-site-estatico-sem-build.md) |
 | Armazenamento | IndexedDB, local-first, export JSON | [ADR 0002](adr/0002-indexeddb-local-first.md) |
 | Cor do álbum | uma cor base, o resto derivado | [ADR 0003](adr/0003-cor-do-album-derivada.md) |
-| Busca de cartas | provedores por jogo; Pokémon com duas fontes juntas | [ADR 0004](adr/0004-busca-pokemon-com-reserva.md) |
+| Busca de cartas | provedores por jogo; Pokémon: TCGdex principal com filtros + Pokémon TCG API como complemento | [ADR 0004](adr/0004-busca-pokemon-com-reserva.md) |
 | Licença | MIT | [LICENSE](../LICENSE) |
 
 ### O que mudou em relação ao planejamento inicial
@@ -61,7 +61,8 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ### v0.2 · Cartas de verdade
 
-- ✅ Buscar carta em base pública e preencher os campos: Pokémon (Pokémon TCG API e TCGdex juntas), Scryfall, YGOPRODeck, com filtro por palavras extras (set, número) ([#22](https://github.com/guiaugusto/sleevebook/pull/22))
+- ✅ Buscar carta em base pública e preencher os campos: Pokémon (TCGdex como fonte principal, completado pela Pokémon TCG API), Scryfall, YGOPRODeck, com filtro por palavras extras ([#22](https://github.com/guiaugusto/sleevebook/pull/22), [#35](https://github.com/guiaugusto/sleevebook/pull/35))
+- ✅ Filtros avançados na busca de Pokémon: set, raridade, ilustrador e idioma (inglês ou português), busca só por filtros e "Mostrar mais"
 - ✅ Vários álbuns: criar, trocar, renomear, excluir ([#23](https://github.com/guiaugusto/sleevebook/pull/23))
 - ✅ Mover e trocar cartas de slot arrastando, inclusive entre páginas ([#24](https://github.com/guiaugusto/sleevebook/pull/24))
 - ✅ Contagem por página, frente e verso separados ([#24](https://github.com/guiaugusto/sleevebook/pull/24))
@@ -93,7 +94,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ## Como foi verificado
 
-- 45 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
+- 55 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
 - Telas testadas manualmente no navegador embutido do app: álbum, virar páginas, mudar grade, escolher cor, cadastrar e buscar carta, vários álbuns, arrastar (com eventos de arrastar simulados), Coleção e Wishlist.
 - Chamadas reais às APIs de Scryfall, YGOPRODeck, TCGdex e Pokémon TCG.
 - No site publicado: página carrega, service worker ativo, 21 arquivos em cache, sem erros no console.

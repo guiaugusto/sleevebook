@@ -8,7 +8,7 @@ import { searchCards, hasSearch, GAMES, refineResults } from '../src/js/provider
 test('Pokémon: normaliza carta com preço e total do set', () => {
   const [c] = pokemon.normalize({ data: [{ id: 'base1-4', name: 'Charizard', number: '4', set: { name: 'Base', printedTotal: 102 },
     images: { small: 'https://img/s.png' }, tcgplayer: { prices: { holofoil: { market: 350.5 } } } }] });
-  eq(c, { name: 'Charizard', set: 'Base', setTotal: 102, number: '4/102', image: 'https://img/s.png', price: 350.5, source: 'pokemon', sourceId: 'base1-4' });
+  eq(c, { name: 'Charizard', set: 'Base', setTotal: 102, number: '4/102', image: 'https://img/s.png', price: 350.5, rarity: '', source: 'pokemon', sourceId: 'base1-4' });
 });
 test('Pokémon: carta sem preço fica com price null', () => {
   eq(pokemon.normalize({ data: [{ id: 'x', name: 'A', number: '1', set: { name: 'S', printedTotal: 10 } }] })[0].price, null);
@@ -76,4 +76,39 @@ test('searchCards ignora buscas curtas e jogos sem provedor', async () => {
   eq(hasSearch('other'), false);
   eq(hasSearch('magic'), true);
   ok(Object.keys(GAMES).includes('yugioh'));
+});
+
+/* ---------- TCGdex: filtros ---------- */
+import { buildParams, hasFilters as hasF, normalizeTcgdex as normDex } from '../src/js/providers/tcgdex.js';
+import { fillMissing } from '../src/js/providers/pokemon.js';
+
+test('TCGdex: buildParams combina nome, filtros exatos e paginação', () => {
+  const p = buildParams({ query: ' turtwig ', filters: { setId: 'mep', rarity: 'Promo', illustrator: 'Saboteri' }, page: 2 });
+  eq(p.get('name'), 'turtwig');
+  eq(p.get('set.id'), 'eq:mep');
+  eq(p.get('rarity'), 'eq:Promo');
+  eq(p.get('illustrator'), 'eq:Saboteri');
+  eq(p.get('pagination:page'), '2');
+  eq(p.get('pagination:itemsPerPage'), '30');
+});
+test('TCGdex: buildParams sem nome nem filtros só pagina', () => {
+  eq([...buildParams({}).keys()].sort(), ['pagination:itemsPerPage', 'pagination:page']);
+});
+test('TCGdex: hasFilters', () => {
+  eq([hasF({}), hasF(null), hasF({ setId: 'mep' }), hasF({ rarity: 'Promo' }), hasF({ illustrator: 'X' }), hasF({ setId: '', rarity: '' })], [false, false, true, true, true, false]);
+});
+test('TCGdex: guarda raridade e ilustrador; set sem total oficial fica sem "/total"', () => {
+  const c = normDex({ id: 'mep-040', localId: '040', name: 'Turtwig', rarity: 'Promo', illustrator: 'Saboteri', set: { name: 'MEP Black Star Promos', cardCount: { official: 0, total: 112 } } });
+  eq([c.number, c.setTotal, c.rarity, c.illustrator], ['040', null, 'Promo', 'Saboteri']);
+});
+test('Pokémon: fillMissing completa imagem e preço sem sobrescrever o que já existe', () => {
+  const dex = { name: 'Pikachu', set: 'Ultra Prism', number: '60/156', image: '', price: null };
+  const ptcg = [{ name: 'Pikachu', set: 'Ultra Prism', number: '60/156', image: 'img', price: 3 }];
+  eq(fillMissing(dex, ptcg), { ...dex, image: 'img', price: 3 });
+  eq(fillMissing({ ...dex, image: 'mine', price: 9 }, ptcg).image, 'mine');
+  eq(fillMissing(dex, []).image, '');
+});
+test('searchCards: sem nome e sem filtros não busca; só Pokémon aceita filtros', async () => {
+  eq(await searchCards('pokemon', '', { filters: {} }), []);
+  eq(await searchCards('magic', '', { filters: { setId: 'x' } }), []);
 });

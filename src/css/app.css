@@ -53,6 +53,10 @@ header.top h1{font-size:18px;margin:0;flex:1;min-width:140px;overflow:hidden;tex
   transition:transform .15s}
 .slot[data-page]{cursor:pointer}
 .slot[data-page]:hover{transform:translateY(calc(-2*var(--u)))}
+.slot.filled[draggable="true"]{cursor:grab}
+.slot.dragging{opacity:.35}
+.slot.over{outline:calc(2*var(--u)) dashed var(--accent);outline-offset:calc(-2*var(--u))}
+.ph b{font-weight:600;font-variant-numeric:tabular-nums}
 .slot .n{position:absolute;top:calc(4*var(--u));left:calc(5*var(--u));font-size:calc(9*var(--u));opacity:.7}
 .slot .plus{font-size:calc(22*var(--u));opacity:.45}
 .slot.filled{box-shadow:0 calc(2*var(--u)) calc(6*var(--u)) #0005;background:#222;color:#fff}

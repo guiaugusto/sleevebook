@@ -110,15 +110,56 @@ footer{padding-block:40px;color:var(--muted);font-size:13px}
 
 <div class="wrap">
 <header class="top">
-  <div class="eyebrow">Planejamento · v0.1</div>
-  <h1>Álbum TCG: planejamento do projeto</h1>
-  <p class="lead">Um álbum digital para catalogar sua coleção de cartas, com páginas que viram, grade configurável (2×2, 3×3, 4×4…) e cadastro carta por carta em cada slot. Esta página reúne nomes, escopo, telas de exemplo, estrutura do GitHub e as decisões que ainda estão abertas.</p>
+  <div class="eyebrow">Planejamento e andamento · 14 nov 2026</div>
+  <h1>Sleevebook: planejamento e andamento</h1>
+  <p class="lead">Um álbum digital para catalogar sua coleção de cartas, com páginas que viram, grade configurável (2×2, 3×3, 4×4…) e cadastro carta por carta em cada slot. As fases v0.1, v0.2 e v0.3 estão desenvolvidas; veja abaixo o que está pronto, o que foi só parcialmente verificado e o que falta. Os mockups mais abaixo são o planejamento original.</p>
 </header>
 
 <nav class="tabs" aria-label="Seções">
-  <a href="#nomes">Nomes</a><a href="#escopo">Escopo</a><a href="#telas">Telas</a><a href="#visual">Como o álbum funciona</a>
+  <a href="#andamento">Andamento</a><a href="#nomes">Nomes</a><a href="#escopo">Escopo</a><a href="#telas">Telas</a><a href="#visual">Como o álbum funciona</a>
   <a href="#tecnica">Técnica</a><a href="#github">GitHub</a><a href="#decisoes">Decisões</a>
 </nav>
+
+<!-- ============ ANDAMENTO ============ -->
+<section id="andamento">
+  <h2>Andamento do desenvolvimento</h2>
+  <p>Cada item entrou na <code>master</code> por Pull Request, com o template do projeto. O código está em <a href="https://github.com/guiaugusto/sleevebook" style="color:var(--accent)">github.com/guiaugusto/sleevebook</a> (repositório privado).</p>
+  <div class="stats" style="margin-top:14px">
+    <div class="stat"><b>3 de 4</b><span>fases entregues (v0.1, v0.2, v0.3)</span></div>
+    <div class="stat"><b>11</b><span>PRs mesclados</span></div>
+    <div class="stat"><b>45</b><span>testes passando</span></div>
+    <div class="stat"><b>6</b><span>issues abertas</span></div>
+  </div>
+  <div class="scroll" style="margin-top:14px"><table>
+    <thead><tr><th>Item</th><th>Estado</th><th>Onde</th></tr></thead><tbody>
+    <tr><td>Grade e número de páginas configuráveis</td><td><span class="pill good">Pronto</span></td><td>PR 19, 20</td></tr>
+    <tr><td>Livro com páginas que viram (botões, teclado, deslizar)</td><td><span class="pill good">Pronto</span></td><td>PR 20</td></tr>
+    <tr><td>Cor do álbum: roda, luminosidade, hexadecimal, cores prontas</td><td><span class="pill good">Pronto</span></td><td>PR 21</td></tr>
+    <tr><td>Cadastro de carta por slot (editar e remover)</td><td><span class="pill good">Pronto</span></td><td>PR 21</td></tr>
+    <tr><td>Salvar no navegador, exportar e importar JSON</td><td><span class="pill good">Pronto</span></td><td>PR 19, 20</td></tr>
+    <tr><td>Busca de cartas: Pokémon (com reserva), Magic, Yu-Gi-Oh!</td><td><span class="pill good">Pronto</span></td><td>PR 22</td></tr>
+    <tr><td>Vários álbuns</td><td><span class="pill good">Pronto</span></td><td>PR 23</td></tr>
+    <tr><td>Arrastar cartas entre slots e páginas; contagem por página</td><td><span class="pill good">Pronto</span></td><td>PR 24</td></tr>
+    <tr><td>Painel, lista pesquisável, valor estimado e wishlist</td><td><span class="pill good">Pronto</span></td><td>PR 25</td></tr>
+    <tr><td>App instalável e uso offline (PWA)</td><td><span class="pill warn">Parcial</span></td><td>PR 26 · issue 14</td></tr>
+    <tr><td>Publicação no GitHub Pages</td><td><span class="pill warn">Parcial</span></td><td>PR 26 · issue 15</td></tr>
+    <tr><td>Conta e sincronização entre dispositivos</td><td><span class="pill bad">Não iniciado</span></td><td>issue 16 · precisa de backend</td></tr>
+    <tr><td>Link público do álbum</td><td><span class="pill bad">Não iniciado</span></td><td>issue 17 · precisa de backend</td></tr>
+    <tr><td>Scanner de carta pela câmera</td><td><span class="pill bad">Não iniciado</span></td><td>issue 18</td></tr>
+    <tr><td>Uma página por vez no celular e mover cartas por toque</td><td><span class="pill bad">Não iniciado</span></td><td>issue 27</td></tr>
+    </tbody></table></div>
+  <div class="grid2">
+    <div class="card"><h3>O que mudou em relação ao plano</h3>
+      <ul class="clean"><li>Sem Vite, TypeScript e Dexie: não há Node na máquina, então é JavaScript puro com módulos ES e uma camada própria de IndexedDB.</li>
+      <li>A busca de Pokémon tem reserva (TCGdex), porque a Pokémon TCG API respondeu com erro 502 em alguns testes.</li>
+      <li>O deploy no GitHub Pages ficou manual: o plano gratuito não oferece Pages para repositório privado.</li></ul></div>
+    <div class="card"><h3>Limitações e o que não foi verificado</h3>
+      <ul class="clean"><li><b>Não verificado:</b> o service worker não registrou no navegador embutido do app, então o uso offline precisa ser confirmado num Chrome normal.</li>
+      <li>O arrastar foi testado com eventos simulados, não com o mouse; no celular ele não funciona (toque).</li>
+      <li>No celular o livro mostra duas páginas e as cartas ficam pequenas.</li>
+      <li>Os dados ficam só no navegador: faça backup com Exportar.</li></ul></div>
+  </div>
+</section>
 
 <!-- ============ NOMES ============ -->
 <section id="nomes">
@@ -299,7 +340,7 @@ Wishlist{ id, cardRef, priority }</pre>
   <div class="dec" id="dec"></div>
 </section>
 
-<footer>Planejamento v0.1 · tamanhos de carta no padrão 63×88 mm · nada aqui foi publicado no GitHub ainda.</footer>
+<footer>Sleevebook · atualizado em 14 nov 2026 · tamanhos de carta no padrão 63×88 mm · detalhes em docs/PLANEJAMENTO.md no repositório.</footer>
 </div>
 
 <script>

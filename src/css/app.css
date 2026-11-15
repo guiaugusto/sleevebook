@@ -144,3 +144,14 @@ dialog#dlgCard{max-height:94vh;overflow-y:auto}
   border:1px solid var(--line);padding:9px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){#book,.sheet,.cover{transition-duration:.01s!important}}
+
+/* Telas estreitas: cabeçalho mais compacto para sobrar espaço ao álbum */
+@media (max-width:560px){
+  header.top{gap:6px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top,0px))}
+  header.top h1{font-size:16px;flex-basis:100%}
+  button{padding:5px 9px;font-size:13px}
+  #albumSelect{max-width:150px;font-size:13px}
+  .stat{font-size:12px}
+  nav.pager{gap:6px;padding:8px}
+  nav.pager input{width:84px}
+}

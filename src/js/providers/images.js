@@ -9,12 +9,17 @@ const CDN = 'https://images.scrydex.com/pokemon';
  * Endereços prováveis no Scrydex para um id do TCGdex.
  * O Scrydex escreve "sv5-10" onde o TCGdex escreve "sv05-010": sem zeros à esquerda no set e no número.
  */
-export function scrydexCandidates(tcgdexId, size = 'small') {
+export function scrydexCandidates(tcgdexId, size = 'small', lang = 'en') {
   const i = String(tcgdexId ?? '').lastIndexOf('-');
   if (i < 1) return [];
   const set = tcgdexId.slice(0, i), num = tcgdexId.slice(i + 1);
   const setNoPad = set.replace(/^([a-z]+)0+(?=\d)/i, '$1');
   const numNoPad = num.replace(/^0+(?=\d)/, '');
+  // Cartas japonesas ficam em sets com sufixo "_ja" (ex.: s12a_ja-200). Só o japonês foi verificado.
+  if (lang === 'ja') {
+    const s = `${setNoPad.toLowerCase()}_ja`;
+    return [...new Set([numNoPad, num])].map(n => `${CDN}/${s}-${n}/${size}`);
+  }
   const sets = [...new Set([setNoPad, setNoPad.toLowerCase(), set])];
   const nums = [...new Set([numNoPad, num])];
   const out = [];
@@ -38,7 +43,9 @@ export function probeImage(url, ms = 4000) {
 export async function fillMissingImages(cards, { probe = probeImage } = {}) {
   return Promise.all(cards.map(async card => {
     if (card.image || card.source !== 'pokemon') return card;
-    for (const url of scrydexCandidates(card.sourceId)) {
+    // Só os idiomas com endereço conhecido no Scrydex (inglês e japonês); nos outros, não arriscamos uma figura de outro idioma.
+    if (card.language && !['en', 'ja'].includes(card.language)) return card;
+    for (const url of scrydexCandidates(card.sourceId, 'small', card.language ?? 'en')) {
       if (await probe(url)) return { ...card, image: url };
     }
     return card;

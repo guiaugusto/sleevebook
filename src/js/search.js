@@ -57,7 +57,7 @@ export function initSearch({ onPick, getGame, ids = CARD_IDS }) {
   function render() {
     list.innerHTML = results.map((c, i) => `<button type="button" class="res" data-i="${i}">
       ${c.image ? `<img src="${esc(c.image)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}
-      <span><b>${esc(c.name)}</b><small>${esc(c.set)} ${esc(c.number)}${c.rarity ? ` · ${esc(c.rarity)}` : ''}</small></span></button>`).join('');
+      <span><b>${esc(c.name)}</b><small>${esc(c.set)} ${esc(c.number)}${c.language && c.language !== 'en' ? ` · ${esc(c.language.toUpperCase())}` : ''}${c.rarity ? ` · ${esc(c.rarity)}` : ''}</small></span></button>`).join('');
     if (adv?.more) adv.more.hidden = !(advOn() && lastBatch >= PAGE_SIZE);
   }
 

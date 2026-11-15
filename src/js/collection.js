@@ -50,7 +50,7 @@ export function renderCollection(root, { albums, slots, cards, onGoto }) {
       return `<tr class="${own ? '' : 'missing-row'}">
         <td>${c.image ? `<img class="thumb ${own ? '' : 'gray'}" src="${esc(c.image)}" alt="" loading="lazy">` : '<span class="thumb"></span>'}</td>
         <td><b>${esc(c.name)}</b>${c.notes ? `<small>${esc(c.notes)}</small>` : ''}</td>
-        <td>${esc(c.set)} ${esc(c.number)}</td>
+        <td>${esc(c.set)} ${esc(c.number)}${c.language && c.language !== 'en' ? ` <span class="lang">${esc(c.language.toUpperCase())}</span>` : ''}</td>
         <td><span class="pill ${own ? 'have' : 'muted'}">${own ? 'Tenho' : 'Falta'}</span></td>
         <td>${own ? esc((c.condition || '').split(' ')[0]) : '<span class="stat">—</span>'}</td>
         <td>${own ? (c.qty || 1) : '<span class="stat">—</span>'}</td>

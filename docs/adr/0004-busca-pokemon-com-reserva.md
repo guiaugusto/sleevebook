@@ -40,3 +40,12 @@ O cadastro preenche a carta a partir de bases públicas. Os três jogos suportad
 - O TCGdex **não tem imagem** para vários sets e promos recentes: nenhuma das 112 cartas do set MEP (incluindo o Turtwig 040) e cerca de 23% das primeiras 500 cartas do catálogo.
 - O CDN de imagens do **Scrydex** (`images.scrydex.com/pokemon/<set>-<número>/small`) serve essas cartas sem chave. Para cada carta sem imagem, `providers/images.js` deriva os endereços prováveis a partir do id do TCGdex (sem zeros à esquerda: `sv05-010` → `sv5-10`), testa carregar cada um e usa o primeiro que funciona. Em 120 cartas que estavam sem imagem, as 120 foram resolvidas; o custo é de cerca de meio segundo por busca.
 - **Risco**: é um endereço de imagem que o Scrydex não documenta como API pública. Pode mudar ou passar a exigir chave. Se isso acontecer, as cartas voltam a aparecer sem imagem (o cadastro continua funcionando e dá para colar uma URL ou enviar foto). O endereço da imagem fica salvo na carta, então cartas já cadastradas dependem do CDN continuar no ar.
+
+## Atualização 4 (2026-11-15): outros idiomas e sets só japoneses
+
+- Cada idioma do TCGdex é um **catálogo separado**: um set só japonês, como o VSTARユニバース (s12a), não existe em inglês. A busca em inglês nunca vai achar o Bibarel 200/172 desse set; só o catálogo `ja` tem.
+- O seletor "Idioma da carta" passou de 2 para **12 idiomas** (inglês, português, japonês, coreano, chinês tradicional e simplificado, francês, alemão, espanhol, italiano, indonésio e tailandês). As listas de sets, raridades e ilustradores vêm do catálogo do idioma escolhido.
+- **Nome em inglês em outro idioma**: se o nome digitado não existe no catálogo escolhido ("bibarel" em japonês é ビーダル), a busca procura o Pokémon em inglês, pega o número da Pokédex (até 3) e busca as cartas pelo `dexId`. Digitar o nome no próprio idioma também funciona.
+- A carta guarda o **idioma** (`language`), que aparece como etiqueta (JA, KO…) nos resultados e na lista da Coleção.
+- **Imagens**: o TCGdex traz a imagem do idioma da carta. O complemento pelo CDN do Scrydex só vale para inglês e japonês (`s12a_ja-200`); nos outros idiomas não se arrisca uma figura de outro idioma. A Pokémon TCG API só entra em buscas em inglês.
+- A raridade "None" do TCGdex (carta sem raridade) deixou de ser mostrada.

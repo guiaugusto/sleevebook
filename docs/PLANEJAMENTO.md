@@ -80,11 +80,11 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 - ⬜ Login e sincronização entre dispositivos ([#16](https://github.com/guiaugusto/sleevebook/issues/16)): exige backend.
 - ⬜ Link público para mostrar o álbum ([#17](https://github.com/guiaugusto/sleevebook/issues/17)): exige backend.
 - ⬜ Scanner de carta pela câmera ([#18](https://github.com/guiaugusto/sleevebook/issues/18)): exige reconhecimento de imagem.
-- ⬜ Modo de uma página no celular e mover cartas por toque ([#27](https://github.com/guiaugusto/sleevebook/issues/27)).
+- ✅ Modo de uma página no celular e mover cartas por toque ([#27](https://github.com/guiaugusto/sleevebook/issues/27)).
 
 ## Limitações conhecidas
 
-- **Celular**: o livro mostra duas páginas lado a lado, então as cartas ficam pequenas; o arrastar de cartas usa o recurso nativo do navegador e não funciona em telas de toque ([#27](https://github.com/guiaugusto/sleevebook/issues/27)).
+- **Celular**: em telas estreitas o livro mostra uma página por vez (botões, deslizar) e a carta pode ser movida pelo botão "Mover…" do cadastro. Foi testado só em janela estreita no computador, não em celular físico. O arrastar com o mouse continua sendo o jeito direto no computador.
 - **Dados só no navegador**: limpar os dados do site apaga o álbum. Use **Exportar** para backup.
 - **Páginas ímpares**: a última tela do livro mostra o verso em branco da última folha.
 - **Preços**: vêm em dólar (TCGplayer), são aproximados e nem toda carta tem preço.

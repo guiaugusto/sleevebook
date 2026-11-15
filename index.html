@@ -41,6 +41,11 @@
   </nav>
 </section>
 
+<div id="moveBar" class="movebar" role="status" hidden>
+  <span id="moveText">Toque no slot de destino</span>
+  <button type="button" id="moveCancel">Cancelar</button>
+</div>
+
 <section id="viewCollection" class="view scroll" hidden aria-label="Coleção"></section>
 
 <section id="viewWishlist" class="view scroll" hidden aria-label="Wishlist"></section>
@@ -132,6 +137,7 @@
     <label for="cNotes">Notas</label><textarea id="cNotes" rows="2" maxlength="500"></textarea>
     <div class="actions">
       <button type="button" class="danger" id="cDel">Remover</button>
+      <button type="button" id="cMove" hidden title="Escolha outro slot para esta carta">Mover…</button>
       <button type="button" id="cCancel">Cancelar</button>
       <button class="primary" id="cSave" value="save">Salvar</button>
     </div>

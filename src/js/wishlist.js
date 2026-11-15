@@ -57,7 +57,7 @@ export function initWishlistDialog({ onSave, onDelete, getGame }) {
       $('#wDel').hidden = !item;
       search.reset();
       $('#dlgWish').showModal();
-      $('#wName').focus();
+      ($('#wSearchBox').hidden ? $('#wName') : $('#wqSearch')).focus();   // foco na busca, para já sair digitando
     },
   };
 }

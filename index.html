@@ -124,55 +124,76 @@
 <!-- Cadastro de carta -->
 <dialog id="dlgCard">
   <form method="dialog" id="formCard">
-    <h2 id="cardTitle">Carta</h2>
-    <div id="searchBox" class="searchbox">
-      <div class="row"><div style="flex:2"><label for="qSearch">Buscar carta pelo nome</label><input id="qSearch" type="search" placeholder="turtwig  ou  turtwig 040  ou  turtwig mep" autocomplete="off"></div>
-        <div><label for="qGame">Jogo</label><select id="qGame"></select></div>
-        <div id="qLangBox"><label for="qLang">Idioma da carta</label><select id="qLang"></select></div></div>
-      <details id="advBox" class="adv">
-        <summary>Filtros: set, raridade, ilustrador</summary>
-        <div class="row"><div><label for="qSet">Set</label><input id="qSet" list="dlSets" autocomplete="off" placeholder="ex.: MEP Black Star Promos"></div>
-          <div><label for="qRarity">Raridade</label><select id="qRarity"></select></div></div>
-        <div class="row"><div><label for="qIllus">Ilustrador</label><input id="qIllus" list="dlIllus" autocomplete="off" placeholder="ex.: Saboteri"></div></div>
-        <p class="hint">Dá para buscar só com filtros, sem digitar o nome (por exemplo, todas as cartas de um set). Os filtros valem para o idioma escolhido ao lado.</p>
-        <button type="button" id="qClear">Limpar filtros</button>
-        <datalist id="dlSets"></datalist><datalist id="dlIllus"></datalist>
-      </details>
-      <p class="hint" id="qStatus" aria-live="polite"></p>
-      <div id="qLangHint" class="langhint" hidden></div>
-      <div id="qResults" class="results"></div>
-      <button type="button" id="qMore" hidden>Mostrar mais</button>
+    <header class="dhead">
+      <h2 id="cardTitle">Carta</h2>
+      <button type="button" class="x" id="cClose" aria-label="Fechar">✕</button>
+    </header>
+    <div class="mtabs" role="tablist" aria-label="Seções do cadastro">
+      <button type="button" role="tab" data-tab="search" aria-selected="true">Buscar</button>
+      <button type="button" role="tab" data-tab="form" aria-selected="false">Dados da carta</button>
     </div>
-    <label class="ownedbox" for="cOwned">
-      <input type="checkbox" id="cOwned" checked>
-      <span><b>Já tenho esta carta</b><small>Desmarque para cartas que você ainda quer: elas aparecem em cinza no álbum. Cartas novas começam com a sua última escolha.</small></span>
-    </label>
-    <label for="cName">Nome da carta</label><input id="cName" required maxlength="100">
-    <div class="row">
-      <div><label for="cSet">Coleção / set</label><input id="cSet" maxlength="80"></div>
-      <div><label for="cNum">Número</label><input id="cNum" placeholder="4/102" maxlength="20"></div>
+    <div class="cardlayout" id="cardLayout" data-tab="search">
+      <section class="col-search" aria-label="Buscar carta">
+        <div id="searchBox" class="searchbox">
+          <div class="row"><div style="flex:2"><label for="qSearch">Buscar carta pelo nome</label><input id="qSearch" type="search" placeholder="turtwig  ou  turtwig 040  ou  turtwig mep" autocomplete="off"></div></div>
+          <div class="row"><div><label for="qGame">Jogo</label><select id="qGame"></select></div>
+            <div id="qLangBox"><label for="qLang">Idioma da carta</label><select id="qLang"></select></div></div>
+          <details id="advBox" class="adv">
+            <summary>Filtros: set, raridade, ilustrador</summary>
+            <div class="row"><div><label for="qSet">Set</label><input id="qSet" list="dlSets" autocomplete="off" placeholder="ex.: MEP Black Star Promos"></div>
+              <div><label for="qRarity">Raridade</label><select id="qRarity"></select></div></div>
+            <div class="row"><div><label for="qIllus">Ilustrador</label><input id="qIllus" list="dlIllus" autocomplete="off" placeholder="ex.: Saboteri"></div></div>
+            <p class="hint">Dá para buscar só com filtros, sem digitar o nome (por exemplo, todas as cartas de um set). Os filtros valem para o idioma escolhido.</p>
+            <button type="button" id="qClear">Limpar filtros</button>
+            <datalist id="dlSets"></datalist><datalist id="dlIllus"></datalist>
+          </details>
+          <p class="hint" id="qStatus" aria-live="polite"></p>
+          <div id="qLangHint" class="langhint" hidden></div>
+          <div id="qResults" class="results"></div>
+          <button type="button" id="qMore" hidden>Mostrar mais</button>
+        </div>
+      </section>
+      <section class="col-form" aria-label="Dados da carta">
+        <div class="formgrid">
+          <div class="previewcol">
+            <div class="preview" id="cPrev" role="img" aria-label="Prévia da carta"></div>
+            <label for="cImg">Imagem (URL)</label><input id="cImg" placeholder="https://...">
+            <label for="cFile">…ou enviar foto/scan</label><input type="file" id="cFile" accept="image/*">
+          </div>
+          <div class="fieldscol">
+            <label class="ownedbox" for="cOwned">
+              <input type="checkbox" id="cOwned" checked>
+              <span><b>Já tenho esta carta</b><small>Desmarque para cartas que você ainda quer: elas aparecem em cinza no álbum. Cartas novas começam com a sua última escolha.</small></span>
+            </label>
+            <label for="cName">Nome da carta</label><input id="cName" required maxlength="100">
+            <div class="row">
+              <div><label for="cSet">Coleção / set</label><input id="cSet" maxlength="80"></div>
+              <div><label for="cNum">Número</label><input id="cNum" placeholder="4/102" maxlength="20"></div>
+            </div>
+            <div class="row" id="ownedFields">
+              <div><label for="cCond">Condição</label><select id="cCond"></select></div>
+              <div><label for="cQty">Quantidade</label><input type="number" id="cQty" min="1" value="1"></div>
+            </div>
+            <label for="cFoil">Efeito foil no álbum</label>
+            <select id="cFoil">
+              <option value="">Automático (descobre pelo TCGdex)</option>
+              <option value="holo">Holo: a arte brilha</option>
+              <option value="reverse">Reverse holo: só a moldura brilha</option>
+              <option value="none">Sem foil</option>
+            </select>
+            <label for="cNotes">Notas</label><textarea id="cNotes" rows="3" maxlength="500"></textarea>
+          </div>
+        </div>
+      </section>
     </div>
-    <div class="row" id="ownedFields">
-      <div><label for="cCond">Condição</label><select id="cCond"></select></div>
-      <div><label for="cQty">Quantidade</label><input type="number" id="cQty" min="1" value="1"></div>
-    </div>
-    <label for="cFoil">Efeito foil no álbum</label>
-    <select id="cFoil">
-      <option value="">Automático (descobre pelo TCGdex)</option>
-      <option value="holo">Holo: a arte brilha</option>
-      <option value="reverse">Reverse holo: só a moldura brilha</option>
-      <option value="none">Sem foil</option>
-    </select>
-    <label for="cImg">Imagem (URL)</label><input id="cImg" placeholder="https://...">
-    <label for="cFile">…ou enviar foto/scan</label><input type="file" id="cFile" accept="image/*">
-    <div class="preview" id="cPrev" role="img" aria-label="Prévia da carta"></div>
-    <label for="cNotes">Notas</label><textarea id="cNotes" rows="2" maxlength="500"></textarea>
-    <div class="actions">
-      <button type="button" class="danger" id="cDel">Remover</button>
-      <button type="button" id="cMove" hidden title="Escolha outro slot para esta carta">Mover…</button>
+    <footer class="dfoot">
+      <span class="spacer">
+        <button type="button" class="danger" id="cDel">Remover</button>
+        <button type="button" id="cMove" hidden title="Escolha outro slot para esta carta">Mover…</button>
+      </span>
       <button type="button" id="cCancel">Cancelar</button>
       <button class="primary" id="cSave" value="save">Salvar</button>
-    </div>
+    </footer>
   </form>
 </dialog>
 

@@ -140,6 +140,10 @@ dialog#dlgCard{max-height:94vh;overflow-y:auto}
 .sw button{width:26px;height:26px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line);padding:0}
 [hidden]{display:none!important}
 .searchbox{border:1px solid var(--line);border-radius:10px;padding:0 12px 12px;margin-bottom:6px;background:#ffffff08}
+.adv{margin-top:8px}
+.adv summary{cursor:pointer;color:var(--accent);font-size:13px}
+.adv .row{margin-top:2px}
+#qMore{margin-top:8px;width:100%}
 .results{display:grid;gap:6px;max-height:200px;overflow-y:auto}
 .res{display:flex;gap:10px;align-items:center;text-align:left;padding:5px 8px}
 .res img,.res .noimg{width:36px;height:50px;object-fit:cover;border-radius:3px;background:#12141a;flex:none}

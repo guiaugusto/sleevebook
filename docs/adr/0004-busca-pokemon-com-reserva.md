@@ -26,3 +26,11 @@ O cadastro preenche a carta a partir de bases públicas. Os três jogos suportad
 - **Duas fontes juntas** (descrito acima), em vez de "principal com reserva": a versão anterior só consultava o TCGdex quando a Pokémon TCG API falhava, então, com ela no ar, cartas que só o TCGdex tem não apareciam.
 - **Palavras extras**: a API só entende o nome. Se a busca com todas as palavras não acha nada ("turtwig 040", "turtwig mep"), busca-se pela primeira palavra e filtra-se pelas demais no nome, set e número. Se o filtro não sobrar nada, mostra tudo.
 - **Limite de 30 resultados** por provedor.
+
+## Atualização 2 (2026-11-15): TCGdex como fonte principal, com filtros
+
+- A **Pokémon TCG API está sendo descontinuada** (segundo comparativos de APIs: sem novos cadastros e chaves valendo até 1º de março de 2027). O app a usa sem chave, então deixou de ser a base da busca.
+- O **TCGdex** passa a ser a **fonte principal** de Pokémon (`providers/tcgdex.js`). Ele filtra por campo no servidor, então a busca ganhou **filtros avançados**: set, raridade, ilustrador e idioma (inglês ou português). Dá para buscar só com filtros, sem digitar o nome, e há "Mostrar mais" (páginas de 30).
+- A Pokémon TCG API continua sendo consultada junto em buscas simples por nome em inglês, só para **completar imagem e preço** que o TCGdex não tenha e para trazer cartas que ele não tenha. Com filtros ou em português ela não é usada.
+- As listas de sets (221), raridades (44) e ilustradores (cerca de 400) vêm do próprio TCGdex e são carregadas uma vez por idioma.
+- Os filtros valem só para Pokémon; Magic e Yu-Gi-Oh! seguem com busca por nome.

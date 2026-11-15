@@ -1,4 +1,10 @@
-// Pokémon TCG API (https://docs.pokemontcg.io). Funciona sem chave, com limite de requisições.
+// Busca de cartas Pokémon. Fonte principal: TCGdex (filtros por set, raridade, ilustrador e idioma).
+// Complemento: Pokémon TCG API (https://docs.pokemontcg.io), que preenche imagem e preço que faltarem e traz
+// cartas que o TCGdex não tem. As duas são consultadas ao mesmo tempo (ADR 0004).
+import { search as searchTcgdex, hasFilters, normalizeTcgdex } from './tcgdex.js';
+
+export { normalizeTcgdex };
+
 const BASE = 'https://api.pokemontcg.io/v2/cards';
 
 /** Preço de mercado do primeiro tipo de impressão que tiver valor. */
@@ -19,6 +25,7 @@ export function normalize(json) {
     number: c.set?.printedTotal ? `${c.number}/${c.set.printedTotal}` : String(c.number ?? ''),
     image: c.images?.small ?? '',
     price: marketPrice(c),
+    rarity: c.rarity ?? '',
     source: 'pokemon',
     sourceId: c.id,
   }));
@@ -30,47 +37,9 @@ export function buildUrl(query) {
     q: `name:"${q}*"`,
     pageSize: '30',
     orderBy: '-set.releaseDate',
-    select: 'id,name,number,set,images,tcgplayer',
+    select: 'id,name,number,set,images,tcgplayer,rarity',
   });
   return `${BASE}?${params}`;
-}
-
-/* ---------- Reserva: TCGdex (https://tcgdex.dev) ----------
-   A Pokémon TCG API fica instável de vez em quando (respostas 502). Se ela falhar ou demorar,
-   buscamos no TCGdex, que tem CORS aberto e preços do TCGplayer. */
-const TCGDEX = 'https://api.tcgdex.net/v2/en/cards';
-
-/** Carta detalhada do TCGdex → formato do app. */
-export function normalizeTcgdex(card) {
-  const tp = card.pricing?.tcgplayer || {};
-  let price = null;
-  for (const kind of Object.keys(tp)) {
-    const v = tp[kind];
-    if (v && typeof v === 'object' && typeof v.marketPrice === 'number') { price = v.marketPrice; break; }
-  }
-  const total = card.set?.cardCount?.official ?? null;
-  return {
-    name: card.name,
-    set: card.set?.name ?? '',
-    setTotal: total,
-    number: total ? `${card.localId}/${total}` : String(card.localId ?? ''),
-    image: card.image ? `${card.image}/low.webp` : '',
-    price,
-    source: 'pokemon',
-    sourceId: card.id,
-  };
-}
-
-async function searchTcgdex(query, signal) {
-  const params = new URLSearchParams({ name: query, 'pagination:page': '1', 'pagination:itemsPerPage': '30' });
-  const res = await fetch(`${TCGDEX}?${params}`, { signal });
-  if (!res.ok) throw new Error(`TCGdex respondeu ${res.status}`);
-  const list = await res.json();
-  const details = await Promise.all(list.map(async c => {
-    try { const r = await fetch(`${TCGDEX}/${encodeURIComponent(c.id)}`, { signal }); return r.ok ? await r.json() : c; }
-    catch (e) { if (e.name === 'AbortError') throw e; return c; }
-  }));
-  return details.map(normalizeTcgdex);
 }
 
 /** Aborta `fetch` depois de `ms`, sem deixar de respeitar o `signal` de quem chamou. */
@@ -90,7 +59,7 @@ async function searchPokemonTcg(query, signal) {
   } finally { t.done(); }
 }
 
-const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 /** "040/102" → "40"; "GG31/70" → "gg31". Compara o número da carta sem zeros à esquerda nem o total do set. */
 const numKey = n => norm(String(n ?? '').split('/')[0]).replace(/^0+(?=\d)/, '');
 
@@ -106,14 +75,26 @@ export function mergeResults(main, extra) {
   return [...main, ...extra.filter(c => !main.some(m => sameCard(m, c)))];
 }
 
+/** Preenche imagem e preço que faltam em `card` com os de uma carta igual em `others`. */
+export function fillMissing(card, others) {
+  if (card.image && card.price != null) return card;
+  const match = others.find(o => sameCard(o, card));
+  return match ? { ...card, image: card.image || match.image, price: card.price ?? match.price } : card;
+}
+
 /**
- * Consulta as duas fontes ao mesmo tempo e junta os resultados. Nenhuma das duas tem todas as cartas
- * (por exemplo, a Pokémon TCG API não tinha a promo MEP 040 do Turtwig), e a Pokémon TCG API às vezes fica fora do ar.
- * Só falha se as duas falharem.
+ * Busca no TCGdex e, quando é uma busca simples por nome em inglês (sem filtros, primeira página), também na
+ * Pokémon TCG API. Resultado: cartas do TCGdex (com imagem e preço completados pela outra fonte) mais as que
+ * só a outra fonte tem. Só falha se todas as fontes consultadas falharem.
  */
-export async function search(query, { signal } = {}) {
-  const [a, b] = await Promise.allSettled([searchPokemonTcg(query, signal), searchTcgdex(query, signal)]);
+export async function search(query, { signal, filters = {}, page = 1, lang = 'en' } = {}) {
+  const simple = !hasFilters(filters) && page === 1 && lang === 'en' && query.trim().length >= 2;
+  const [a, b] = await Promise.allSettled([
+    searchTcgdex(query, { signal, filters, page, lang }),
+    simple ? searchPokemonTcg(query, signal) : Promise.resolve([]),
+  ]);
   if (signal?.aborted) throw new DOMException('Busca cancelada', 'AbortError');
-  if (a.status === 'rejected' && b.status === 'rejected') throw b.reason;
-  return mergeResults(a.value ?? [], b.value ?? []);
+  if (a.status === 'rejected' && (b.status === 'rejected' || !simple)) throw a.reason;
+  const main = a.value ?? [], extra = b.value ?? [];
+  return mergeResults(main.map(c => fillMissing(c, extra)), extra);
 }

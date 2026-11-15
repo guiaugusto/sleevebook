@@ -11,7 +11,7 @@ Acompanhe o que já está pronto no [roadmap](docs/PLANEJAMENTO.md#roadmap).
 - Álbum com grade e número de páginas configuráveis
 - Visual de livro com páginas que viram (botões, teclado e deslize no celular)
 - Cor do álbum por roda de cores ou hexadecimal, com papel, bolsos e texto adaptados
-- Cadastro de carta por slot, com busca em bases públicas (Pokémon TCG, Scryfall, YGOPRODeck)
+- Cadastro de carta por slot, com busca em bases públicas (Pokémon, Magic, Yu-Gi-Oh!) e, para Pokémon, filtros por set, raridade, ilustrador e idioma
 - Vários álbuns, arrastar cartas entre slots
 - Painel da coleção, lista pesquisável, preço estimado e wishlist
 - Funciona offline (PWA) e guarda tudo no navegador, com exportação em JSON

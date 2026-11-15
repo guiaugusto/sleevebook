@@ -118,8 +118,19 @@
     <div id="searchBox" class="searchbox">
       <div class="row"><div style="flex:2"><label for="qSearch">Buscar carta pelo nome</label><input id="qSearch" type="search" placeholder="turtwig  ou  turtwig 040  ou  turtwig mep" autocomplete="off"></div>
         <div><label for="qGame">Jogo</label><select id="qGame"></select></div></div>
+      <details id="advBox" class="adv">
+        <summary>Filtros: set, raridade, ilustrador, idioma</summary>
+        <div class="row"><div><label for="qSet">Set</label><input id="qSet" list="dlSets" autocomplete="off" placeholder="ex.: MEP Black Star Promos"></div>
+          <div><label for="qRarity">Raridade</label><select id="qRarity"></select></div></div>
+        <div class="row"><div><label for="qIllus">Ilustrador</label><input id="qIllus" list="dlIllus" autocomplete="off" placeholder="ex.: Saboteri"></div>
+          <div><label for="qLang">Idioma da carta</label><select id="qLang"></select></div></div>
+        <p class="hint">Dá para buscar só com filtros, sem digitar o nome (por exemplo, todas as cartas de um set).</p>
+        <button type="button" id="qClear">Limpar filtros</button>
+        <datalist id="dlSets"></datalist><datalist id="dlIllus"></datalist>
+      </details>
       <p class="hint" id="qStatus" aria-live="polite"></p>
       <div id="qResults" class="results"></div>
+      <button type="button" id="qMore" hidden>Mostrar mais</button>
     </div>
     <label for="cName">Nome da carta</label><input id="cName" required maxlength="100">
     <div class="row">

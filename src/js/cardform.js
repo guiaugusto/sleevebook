@@ -31,6 +31,7 @@ export function readCardFields() {
     qty: Math.max(1, parseInt($('#cQty').value, 10) || 1),
     notes: $('#cNotes').value.trim(),
     owned: $('#cOwned').checked,
+    foil: $('#cFoil').value || undefined,   // vazio = automático (o app descobre pelo TCGdex)
   };
 }
 
@@ -75,6 +76,7 @@ export function initCardForm({ onSave, onDelete, onMoveStart }) {
       $('#cName').value = card?.name || ''; $('#cSet').value = card?.set || ''; $('#cNum').value = card?.number || '';
       $('#cCond').value = card?.condition || CONDITIONS[1]; $('#cQty').value = card?.qty || 1;
       $('#cOwned').checked = card ? card.owned !== false : readOwnedDefault(); syncOwned();
+      $('#cFoil').value = card?.foil ?? '';
       $('#cNotes').value = card?.notes || ''; $('#cFile').value = '';
       $('#cImg').value = image.startsWith('data:') ? '' : image;
       preview();
@@ -90,7 +92,8 @@ export function initCardForm({ onSave, onDelete, onMoveStart }) {
       if (data.set != null) $('#cSet').value = data.set;
       if (data.number != null) $('#cNum').value = data.number;
       if (data.image != null) { image = data.image; $('#cImg').value = image; preview(); }
-      existing = { ...(existing || {}), source: data.source ?? existing?.source, sourceId: data.sourceId ?? existing?.sourceId, setTotal: data.setTotal ?? existing?.setTotal, language: data.language ?? existing?.language };
+      existing = { ...(existing || {}), source: data.source ?? existing?.source, sourceId: data.sourceId ?? existing?.sourceId, setTotal: data.setTotal ?? existing?.setTotal, language: data.language ?? existing?.language, foil: data.foil ?? existing?.foil };
+      $('#cFoil').value = data.foil ?? existing?.foil ?? '';
     },
   };
 }

@@ -7,6 +7,7 @@ import { createColorPicker } from './wheel.js';
 import { initCardForm } from './cardform.js';
 import { initSearch } from './search.js';
 import { repairImage } from './providers/images.js';
+import { fetchFoil } from './providers/tcgdex.js';
 import { GAMES } from './providers/index.js';
 import { renderCollection } from './collection.js';
 import { renderWishlist, initWishlistDialog } from './wishlist.js';
@@ -177,6 +178,7 @@ function wireSettings() {
     const a = state.album;
     $('#sName').value = a.name; $('#sGame').value = a.game || 'pokemon'; $('#sRows').value = a.rows; $('#sCols').value = a.cols; $('#sPages').value = a.pages;
     draftColor = a.color; saved = false;
+    $('#sFoil').checked = foilEnabled();
     picker.set(a.color);
     updateSetInfo();
     $('#dlgSet').showModal();
@@ -186,6 +188,7 @@ function wireSettings() {
   $('#formSet').addEventListener('submit', async e => {
     if (e.submitter?.id !== 'sSave') return;
     saved = true;
+    setFoilEnabled($('#sFoil').checked);
     const layout = sanitizeLayout({ rows: $('#sRows').value, cols: $('#sCols').value, pages: $('#sPages').value });
     state.album = { ...state.album, name: $('#sName').value.trim() || 'Meu Álbum', game: $('#sGame').value, color: draftColor, ...layout };
     await db.put('albums', state.album);
@@ -326,6 +329,29 @@ function wireViews() {
   });
 }
 
+/* ---------- Foil ---------- */
+const FOIL_KEY = 'sleevebook-foil';
+const foilEnabled = () => { try { return localStorage.getItem(FOIL_KEY) !== '0'; } catch { return true; } };
+function setFoilEnabled(on) {
+  try { localStorage.setItem(FOIL_KEY, on ? '1' : '0'); } catch { /* sem armazenamento: fica ligado */ }
+  $('#stage').classList.toggle('foil-off', !on);
+}
+
+const foilTried = new Set();
+/** Carta Pokémon salva antes de guardarmos o foil: descobre o tipo pelo TCGdex (uma vez por carta por sessão) e grava. */
+async function detectFoil(key) {
+  const rec = state.slots.get(key), card = rec && state.cards.get(rec.cardId);
+  if (!card || card.foil !== undefined || foilTried.has(card.id)) return;
+  foilTried.add(card.id);
+  try {
+    const foil = await fetchFoil(card.sourceId, card.language ?? 'en');
+    const saved = { ...card, foil: foil ?? 'none' };
+    await db.put('cards', saved);
+    state.cards.set(saved.id, saved);
+    book.updateSlot(key);
+  } catch { foilTried.delete(card.id); }     // sem rede ou carta que o TCGdex não conhece: tenta de novo numa próxima vez
+}
+
 /** Uma imagem salva deixou de carregar: procura outra, grava na carta e redesenha o slot. Tenta uma vez por carta. */
 const triedImages = new Set();
 async function repairSlotImage(key) {
@@ -396,7 +422,8 @@ function wireBackup() {
 
 /* ---------- Início ---------- */
 async function main() {
-  book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot), onMove: moveCard, onBrokenImage: repairSlotImage });
+  book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot), onMove: moveCard, onBrokenImage: repairSlotImage, onFoilNeeded: detectFoil });
+  setFoilEnabled(foilEnabled());
   await loadAlbum();
   wireNav(); wireAlbums(); wireSettings(); wireCards(); wireBackup(); wireViews();
   draw();

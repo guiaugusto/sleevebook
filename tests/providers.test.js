@@ -200,3 +200,20 @@ test('Imagens: cartas de outros jogos não são consertadas pelo Scrydex', async
   const fixed = await repairImage({ sourceId: 'abc', source: 'magic', image: 'https://x/y.jpg' }, { probe: async () => true });
   eq(fixed.image, '');
 });
+
+/* ---------- Foil ---------- */
+import { foilFromVariants } from '../src/js/providers/tcgdex.js';
+
+test('Foil: holo tem prioridade sobre reverse; só reverse = reverse; sem versões foil = none', () => {
+  eq(foilFromVariants({ holo: true, reverse: true, normal: false }), 'holo');
+  eq(foilFromVariants({ holo: false, reverse: true, normal: true }), 'reverse');
+  eq(foilFromVariants({ holo: false, reverse: false, normal: true }), 'none');
+});
+test('Foil: sem a informação das versões, não inventa (undefined)', () => {
+  eq([foilFromVariants(undefined), foilFromVariants(null), foilFromVariants('x')], [undefined, undefined, undefined]);
+});
+test('Foil: normalizeTcgdex traz o tipo de foil da carta', () => {
+  const card = { id: 'mep-040', localId: '040', name: 'Turtwig', variants: { holo: true, reverse: false, normal: false } };
+  eq(normDex(card).foil, 'holo');
+  eq(normDex({ id: 'x-1', localId: '1', name: 'A' }).foil, undefined);
+});

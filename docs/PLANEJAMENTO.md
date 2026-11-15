@@ -37,8 +37,8 @@ Legenda: ⬜ a fazer · ✅ pronto
 
 - ✅ Criar álbum com linhas × colunas e número de páginas
 - ✅ Folhear em visual de livro (botões, teclado, deslizar)
-- ⬜ Cor do álbum por roda de cores e hexadecimal
-- ⬜ Cadastrar carta por slot (nome, set, número, condição, quantidade, imagem)
+- ✅ Cor do álbum por roda de cores e hexadecimal
+- ✅ Cadastrar carta por slot (nome, set, número, condição, quantidade, imagem)
 - ✅ Salvar no navegador, exportar e importar JSON
 
 ### v0.2 · Cartas de verdade

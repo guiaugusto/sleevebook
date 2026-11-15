@@ -85,6 +85,14 @@ export function createBook(stage, handlers = {}) {
     notify();
   }
 
+  /** Redesenha só o slot indicado (sem refazer o livro inteiro). */
+  function updateSlot(key) {
+    if (!data) return;
+    for (const s of el.querySelectorAll('.slot[data-key]')) {
+      if (s.dataset.key === key) s.outerHTML = slotHTML(data.album, +s.dataset.page, +s.dataset.row, +s.dataset.col);
+    }
+  }
+
   function notify() { handlers.onSpread?.(spread, visiblePages(spread, data.album.pages), total()); }
 
   /* ---------- Virar páginas ---------- */
@@ -138,6 +146,7 @@ export function createBook(stage, handlers = {}) {
 
   return {
     render,
+    updateSlot,
     layout,
     goTo,
     next: () => goTo(spread + 1),

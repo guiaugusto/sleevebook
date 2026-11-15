@@ -5,6 +5,8 @@ import { applyTheme, DEFAULT_COLOR } from './color.js';
 import { PRESETS, sanitizeLayout, spreadForPage, slotsInGrid, totalSlots, sheetCount } from './grid.js';
 import { createColorPicker } from './wheel.js';
 import { initCardForm } from './cardform.js';
+import { initSearch } from './search.js';
+import { GAMES } from './providers/index.js';
 import { $, uid, toast, downloadJSON, slug } from './util.js';
 
 const state = { album: null, slots: new Map(), cards: new Map() };
@@ -74,6 +76,7 @@ function updateSetInfo() {
 }
 
 function wireSettings() {
+  $('#sGame').innerHTML = Object.entries(GAMES).map(([k, g]) => `<option value="${k}">${g.label}</option>`).join('');
   $('#presets').innerHTML = PRESETS.map(p => `<button type="button" data-p="${p.rows},${p.cols},${p.pages}">${p.rows}×${p.cols} · ${p.pages} págs.</button>`).join('');
   $('#presets').onclick = e => {
     const b = e.target.closest('button');
@@ -89,7 +92,7 @@ function wireSettings() {
   });
   $('#btnSettings').onclick = () => {
     const a = state.album;
-    $('#sName').value = a.name; $('#sRows').value = a.rows; $('#sCols').value = a.cols; $('#sPages').value = a.pages;
+    $('#sName').value = a.name; $('#sGame').value = a.game || 'pokemon'; $('#sRows').value = a.rows; $('#sCols').value = a.cols; $('#sPages').value = a.pages;
     draftColor = a.color; saved = false;
     picker.set(a.color);
     updateSetInfo();
@@ -101,7 +104,7 @@ function wireSettings() {
     if (e.submitter?.id !== 'sSave') return;
     saved = true;
     const layout = sanitizeLayout({ rows: $('#sRows').value, cols: $('#sCols').value, pages: $('#sPages').value });
-    state.album = { ...state.album, name: $('#sName').value.trim() || 'Meu Álbum', color: draftColor, ...layout };
+    state.album = { ...state.album, name: $('#sName').value.trim() || 'Meu Álbum', game: $('#sGame').value, color: draftColor, ...layout };
     await db.put('albums', state.album);
     draw();
     book.goTo(Math.min(book.spread, sheetCount(layout.pages)));
@@ -136,9 +139,10 @@ function wireCards() {
     },
   });
   app.form = form;
+  const search = initSearch({ onPick: data => form.fill(data), getGame: () => state.album.game });
   app.onSlot = slot => {
     const rec = state.slots.get(slot.key);
-    form.open(slot, rec && state.cards.get(rec.cardId));
+    form.open(slot, rec && state.cards.get(rec.cardId), { beforeOpen: search.reset });
   };
 }
 

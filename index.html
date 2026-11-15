@@ -33,6 +33,7 @@
   <form method="dialog" id="formSet">
     <h2>Configurar álbum</h2>
     <label for="sName">Nome</label><input id="sName" maxlength="60">
+    <label for="sGame">Jogo</label><select id="sGame"></select>
     <div class="row">
       <div><label for="sRows">Linhas</label><input type="number" id="sRows" min="1" max="6"></div>
       <div><label for="sCols">Colunas</label><input type="number" id="sCols" min="1" max="6"></div>
@@ -53,6 +54,12 @@
 <dialog id="dlgCard">
   <form method="dialog" id="formCard">
     <h2 id="cardTitle">Carta</h2>
+    <div id="searchBox" class="searchbox">
+      <div class="row"><div style="flex:2"><label for="qSearch">Buscar carta pelo nome</label><input id="qSearch" type="search" placeholder="charizard" autocomplete="off"></div>
+        <div><label for="qGame">Jogo</label><select id="qGame"></select></div></div>
+      <p class="hint" id="qStatus" aria-live="polite"></p>
+      <div id="qResults" class="results"></div>
+    </div>
     <label for="cName">Nome da carta</label><input id="cName" required maxlength="100">
     <div class="row">
       <div><label for="cSet">Coleção / set</label><input id="cSet" maxlength="80"></div>

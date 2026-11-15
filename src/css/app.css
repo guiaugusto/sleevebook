@@ -93,6 +93,12 @@ dialog#dlgCard{max-height:94vh;overflow-y:auto}
 .sw{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .sw button{width:26px;height:26px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line);padding:0}
 [hidden]{display:none!important}
+.searchbox{border:1px solid var(--line);border-radius:10px;padding:0 12px 12px;margin-bottom:6px;background:#ffffff08}
+.results{display:grid;gap:6px;max-height:200px;overflow-y:auto}
+.res{display:flex;gap:10px;align-items:center;text-align:left;padding:5px 8px}
+.res img,.res .noimg{width:36px;height:50px;object-fit:cover;border-radius:3px;background:#12141a;flex:none}
+.res span:last-child{display:flex;flex-direction:column;min-width:0}
+.res small{color:var(--muted)}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--panel);
   border:1px solid var(--line);padding:9px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
 #toast.show{opacity:1;transform:translate(-50%,0)}

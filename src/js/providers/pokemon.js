@@ -28,7 +28,7 @@ export function buildUrl(query) {
   const q = query.replace(/["\\]/g, '').trim();
   const params = new URLSearchParams({
     q: `name:"${q}*"`,
-    pageSize: '12',
+    pageSize: '30',
     orderBy: '-set.releaseDate',
     select: 'id,name,number,set,images,tcgplayer',
   });
@@ -62,7 +62,7 @@ export function normalizeTcgdex(card) {
 }
 
 async function searchTcgdex(query, signal) {
-  const params = new URLSearchParams({ name: query, 'pagination:page': '1', 'pagination:itemsPerPage': '10' });
+  const params = new URLSearchParams({ name: query, 'pagination:page': '1', 'pagination:itemsPerPage': '30' });
   const res = await fetch(`${TCGDEX}?${params}`, { signal });
   if (!res.ok) throw new Error(`TCGdex respondeu ${res.status}`);
   const list = await res.json();

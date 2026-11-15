@@ -66,6 +66,14 @@ export function initCardForm({ onSave, onDelete, onMoveStart }) {
   $('#cOwned').addEventListener('change', syncOwned);
   $('#cDel').onclick = () => { $('#dlgCard').close(); onDelete(slot, existing); };
   $('#cCancel').onclick = () => $('#dlgCard').close();
+  $('#cClose').onclick = () => $('#dlgCard').close();
+
+  // Celular: o cadastro tem duas abas ("Buscar" e "Dados da carta"). No computador as duas aparecem lado a lado.
+  const setTab = tab => {
+    $('#cardLayout').dataset.tab = tab;
+    document.querySelectorAll('.mtabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+  };
+  document.querySelectorAll('.mtabs button').forEach(b => { b.onclick = () => setTab(b.dataset.tab); });
   $('#cMove').onclick = () => { $('#dlgCard').close(); onMoveStart(slot, existing); };
 
   return {
@@ -83,8 +91,13 @@ export function initCardForm({ onSave, onDelete, onMoveStart }) {
       $('#cDel').hidden = !card;
       $('#cMove').hidden = !card;
       extra.beforeOpen?.();
+      setTab('search');                                   // celular: começa na aba de busca
       $('#dlgCard').showModal();
-      $('#cName').focus();
+      // O foco vai para a busca (ou, se o jogo não tem busca, para o nome), para já sair digitando.
+      const first = $('#searchBox').hidden ? $('#cName') : $('#qSearch');
+      if (first === $('#cName')) setTab('form');
+      first.focus();
+      first.select?.();
     },
     /** Usado pela busca (próximo PR) para preencher os campos a partir de um resultado. */
     fill(data) {
@@ -94,6 +107,7 @@ export function initCardForm({ onSave, onDelete, onMoveStart }) {
       if (data.image != null) { image = data.image; $('#cImg').value = image; preview(); }
       existing = { ...(existing || {}), source: data.source ?? existing?.source, sourceId: data.sourceId ?? existing?.sourceId, setTotal: data.setTotal ?? existing?.setTotal, language: data.language ?? existing?.language, foil: data.foil ?? existing?.foil };
       $('#cFoil').value = data.foil ?? existing?.foil ?? '';
+      setTab('form');                                     // celular: depois de escolher a carta, mostra os dados
     },
   };
 }

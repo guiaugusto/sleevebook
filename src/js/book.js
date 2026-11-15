@@ -44,7 +44,9 @@ export function createBook(stage, handlers = {}) {
     if (!card) return `<div class="slot" ${attrs} aria-label="Slot ${idx} vazio"><span class="plus">+</span></div>`;
     // Sem texto em cima da carta: os detalhes aparecem ao clicar no slot. Só cartas sem imagem mostram o nome.
     const missing = card.owned === false;   // "ainda não tenho": aparece em cinza
-    return `<div class="slot filled ${card.image ? '' : 'noimg'}${missing ? ' missing' : ''}" ${attrs} draggable="true" aria-label="${esc(card.name)}${missing ? ' (ainda não tenho)' : ''}">
+    // Tipo de foil: 'holo', 'reverse' ou 'none'. 'unknown' = carta Pokémon salva antes de guardarmos o foil; o app descobre ao passar o mouse.
+    const foil = card.foil ?? (card.source === 'pokemon' && card.sourceId ? 'unknown' : 'none');
+    return `<div class="slot filled ${card.image ? '' : 'noimg'}${missing ? ' missing' : ''}" ${attrs} data-foil="${foil}" draggable="true" aria-label="${esc(card.name)}${missing ? ' (ainda não tenho)' : ''}">
       ${card.image ? `<img src="${esc(card.image)}" alt="" loading="lazy" draggable="false">` : `<div class="label">${esc(card.name)}</div>`}
       <div class="shine"></div></div>`;
   }
@@ -198,13 +200,45 @@ export function createBook(stage, handlers = {}) {
     const s = e.target.closest?.('.slot[data-page]');
     if (s) { e.preventDefault(); s.click(); }
   });
+  /* ---------- Foil: brilho e inclinação enquanto o mouse (ou o dedo) está sobre a carta ---------- */
+  const FOIL_TILT = 14;                          // graus de inclinação nas bordas
+  let foilSlot = null;
+  const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function endFoil() {
+    if (!foilSlot) return;
+    foilSlot.classList.remove('foiling');
+    for (const v of ['--mx', '--my', '--bx', '--by', '--rx', '--ry']) foilSlot.style.removeProperty(v);
+    foilSlot = null;
+  }
+
+  function moveFoil(slot, e) {
+    const r = slot.getBoundingClientRect();
+    const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+    slot.style.setProperty('--mx', x * 100 + '%');
+    slot.style.setProperty('--my', y * 100 + '%');
+    if (!['holo', 'reverse'].includes(slot.dataset.foil) || reduceMotion()) return;
+    slot.style.setProperty('--bx', x * 100 + '%');
+    slot.style.setProperty('--by', y * 100 + '%');
+    slot.style.setProperty('--ry', (x - 0.5) * 2 * FOIL_TILT + 'deg');
+    slot.style.setProperty('--rx', (0.5 - y) * 2 * FOIL_TILT + 'deg');
+  }
+
+  function startFoil(slot) {
+    foilSlot = slot;
+    if (slot.classList.contains('missing')) return;     // carta que ainda não tenho: sem foil
+    if (slot.dataset.foil === 'unknown') handlers.onFoilNeeded?.(slot.dataset.key);
+    slot.classList.add('foiling');
+  }
+
   el.addEventListener('pointermove', e => {
     const s = e.target.closest('.slot.filled');
-    if (!s) return;
-    const r = s.getBoundingClientRect();
-    s.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-    s.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    if (s !== foilSlot) { endFoil(); if (s) startFoil(s); }
+    if (s) moveFoil(s, e);
   });
+  el.addEventListener('pointerleave', endFoil);
+  el.addEventListener('pointercancel', endFoil);
+  el.addEventListener('pointerup', e => { if (e.pointerType === 'touch') endFoil(); });
 
   /* ---------- Arrastar e soltar cartas ---------- */
   let dragKey = null, edgeTimer = null, edgeDir = 0;

@@ -9,6 +9,17 @@ export const LANGUAGES = {
 };
 export const PAGE_SIZE = 30;
 
+/**
+ * Tipo de foil a partir das versões que a carta tem no TCGdex ({ holo, reverse, normal… }):
+ * 'holo' (a arte brilha), 'reverse' (só a moldura brilha) ou 'none'. Sem a informação (`undefined`), devolve `undefined`.
+ */
+export function foilFromVariants(variants) {
+  if (!variants || typeof variants !== 'object') return undefined;
+  if (variants.holo) return 'holo';
+  if (variants.reverse) return 'reverse';
+  return 'none';
+}
+
 /** Carta detalhada do TCGdex → formato do app. `lang` é o idioma do catálogo em que a carta foi buscada. */
 export function normalizeTcgdex(card, lang = 'en') {
   const tp = card.pricing?.tcgplayer || {};
@@ -28,6 +39,7 @@ export function normalizeTcgdex(card, lang = 'en') {
     rarity: card.rarity && card.rarity !== 'None' ? card.rarity : '',   // o TCGdex usa "None" quando a carta não tem raridade
     illustrator: card.illustrator ?? '',
     language: lang,
+    foil: foilFromVariants(card.variants),
     source: 'pokemon',
     sourceId: card.id,
   };
@@ -102,3 +114,9 @@ export const listRarities = (lang = 'en') => once(`rar:${lang}`, () => getJson(`
 
 export const listIllustrators = (lang = 'en') => once(`ill:${lang}`, async () =>
   (await getJson(`${API}/${lang}/illustrators`)).filter(n => n && !n.includes('"')));
+
+/** Tipo de foil de uma carta já cadastrada, consultando o TCGdex (para cartas salvas antes de guardarmos o foil). */
+export async function fetchFoil(sourceId, lang = 'en', signal) {
+  const card = await getJson(`${API}/${lang}/cards/${encodeURIComponent(sourceId)}`, signal);
+  return foilFromVariants(card.variants);
+}

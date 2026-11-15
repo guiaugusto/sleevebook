@@ -13,6 +13,7 @@ Acompanhe o que já está pronto no [roadmap](docs/PLANEJAMENTO.md#roadmap).
 - Cor do álbum por roda de cores ou hexadecimal, com papel, bolsos e texto adaptados
 - Cadastro de carta por slot, com busca em bases públicas (Pokémon, Magic, Yu-Gi-Oh!) e, para Pokémon, filtros por set, raridade, ilustrador e idioma (inclui cartas japonesas e de outros 10 idiomas)
 - Vários álbuns, arrastar cartas entre slots
+- Efeito foil: cartas com versão holo brilham e inclinam ao passar o mouse ou tocar (dá para desligar)
 - Coleção dos sonhos: marque cada carta como "tenho" ou "ainda quero"; as que faltam aparecem em cinza no álbum
 - Painel da coleção (tenho, faltam, progresso por álbum e por set), lista pesquisável com filtro por situação e wishlist
 - Funciona offline (PWA) e guarda tudo no navegador, com exportação em JSON

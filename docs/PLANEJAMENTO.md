@@ -26,6 +26,7 @@ Um álbum digital para catalogar coleções de cartas TCG, no formato de um álb
 | Stack | HTML, CSS e módulos ES, sem build | [ADR 0001](adr/0001-site-estatico-sem-build.md) |
 | Armazenamento | IndexedDB, local-first, export JSON | [ADR 0002](adr/0002-indexeddb-local-first.md) |
 | Cor do álbum | uma cor base, o resto derivado | [ADR 0003](adr/0003-cor-do-album-derivada.md) |
+| Efeito foil | CSS ao passar o mouse; tipo pelo TCGdex | [ADR 0005](adr/0005-efeito-foil.md) |
 | Busca de cartas | provedores por jogo; Pokémon: TCGdex principal com filtros + Pokémon TCG API como complemento | [ADR 0004](adr/0004-busca-pokemon-com-reserva.md) |
 | Licença | MIT | [LICENSE](../LICENSE) |
 
@@ -72,6 +73,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 - ✅ Painel: total de cartas, cópias, álbuns e progresso por álbum e por set ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
 - ✅ Lista e busca de toda a coleção, com filtros, ordenação e a localização de cada carta ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
 - ⏸ Valor estimado: **adiado** por decisão do usuário. Os preços saíram da interface (cadastro, busca, Coleção); o app não preenche nem mostra mais preço. Cartas antigas podem ter o campo `price` guardado, que fica sem uso ([#12](https://github.com/guiaugusto/sleevebook/issues/12))
+- ✅ Efeito foil (versão 1): carta com versão holo brilha e inclina ao passar o mouse ou tocar; tipo pelo TCGdex ou escolhido no cadastro; liga/desliga nas configurações ([ADR 0005](adr/0005-efeito-foil.md))
 - ✅ Cartas "tenho" e "ainda quero": cada carta tem o marcador "Já tenho esta carta"; as que faltam aparecem em cinza no álbum, com contagem "faltam" e filtro na Coleção; progresso por álbum e por set conta só as que tenho
 - ✅ Wishlist com prioridade e atalho "Colocar no álbum" ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
 
@@ -95,7 +97,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 ## Como foi verificado
 
-- 70 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
+- 73 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
 - Telas testadas manualmente no navegador embutido do app: álbum, virar páginas, mudar grade, escolher cor, cadastrar e buscar carta, vários álbuns, arrastar (com eventos de arrastar simulados), Coleção e Wishlist.
 - Chamadas reais às APIs de Scryfall, YGOPRODeck, TCGdex e Pokémon TCG.
 - No site publicado: página carrega, service worker ativo, 21 arquivos em cache, sem erros no console.

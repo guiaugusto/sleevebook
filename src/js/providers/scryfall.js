@@ -2,7 +2,7 @@
 const BASE = 'https://api.scryfall.com/cards/search';
 
 export function normalize(json) {
-  return (json?.data || []).slice(0, 12).map(c => {
+  return (json?.data || []).slice(0, 30).map(c => {
     const img = c.image_uris || c.card_faces?.[0]?.image_uris || {};
     const usd = c.prices?.usd ?? c.prices?.usd_foil;
     return {

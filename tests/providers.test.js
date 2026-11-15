@@ -112,3 +112,33 @@ test('searchCards: sem nome e sem filtros não busca; só Pokémon aceita filtro
   eq(await searchCards('pokemon', '', { filters: {} }), []);
   eq(await searchCards('magic', '', { filters: { setId: 'x' } }), []);
 });
+
+/* ---------- Imagens que faltam (Scrydex) ---------- */
+import { scrydexCandidates, fillMissingImages } from '../src/js/providers/images.js';
+
+test('Imagens: endereços do Scrydex sem zeros à esquerda no set e no número', () => {
+  eq(scrydexCandidates('mep-040')[0], 'https://images.scrydex.com/pokemon/mep-40/small');
+  eq(scrydexCandidates('sv05-010')[0], 'https://images.scrydex.com/pokemon/sv5-10/small');
+  eq(scrydexCandidates('bw8-1')[0], 'https://images.scrydex.com/pokemon/bw8-1/small');
+});
+test('Imagens: id com letras no número e limite de candidatos', () => {
+  const c = scrydexCandidates('swsh12.5gg-GG31');
+  ok(c[0].endsWith('/swsh12.5gg-GG31/small'), c[0]);
+  ok(c.length <= 4);
+  eq(scrydexCandidates('semtraco'), []);
+});
+test('Imagens: usa o primeiro endereço que carrega e não mexe em quem já tem imagem', async () => {
+  const tried = [];
+  const probe = async url => { tried.push(url); return url.includes('/mep-40/'); };
+  const r = await fillMissingImages([
+    { sourceId: 'mep-040', image: '', source: 'pokemon' },
+    { sourceId: 'x-1', image: 'ja-tem', source: 'pokemon' },
+    { sourceId: 'zzz-1', image: '', source: 'pokemon' },
+    { sourceId: 'm', image: '', source: 'magic' },
+  ], { probe });
+  eq(r[0].image, 'https://images.scrydex.com/pokemon/mep-40/small');
+  eq(r[1].image, 'ja-tem');
+  eq(r[2].image, '');            // nenhum candidato carregou
+  eq(r[3].image, '');            // outro jogo: não mexe
+  ok(!tried.some(u => u.includes('/x-1/')), 'não deveria testar carta que já tem imagem');
+});

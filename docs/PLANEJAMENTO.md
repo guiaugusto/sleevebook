@@ -90,11 +90,11 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 - **Páginas ímpares**: a última tela do livro mostra o verso em branco da última folha.
 - **Preços**: vêm em dólar (TCGplayer), são aproximados e nem toda carta tem preço.
 - **Busca offline**: sem internet a busca não funciona; o cadastro manual sim.
-- **Imagens por URL**: dependem do site de origem continuar no ar; imagens enviadas por arquivo ficam guardadas no navegador.
+- **Imagens por URL**: dependem do site de origem continuar no ar; imagens enviadas por arquivo ficam guardadas no navegador. As imagens que o TCGdex não tem vêm do CDN do Scrydex (endereço não documentado como API; ver ADR 0004).
 
 ## Como foi verificado
 
-- 55 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
+- 58 testes de lógica pura rodando no navegador (`tests/index.html`): cor, grade, armazenamento (IndexedDB real), provedores e estatísticas.
 - Telas testadas manualmente no navegador embutido do app: álbum, virar páginas, mudar grade, escolher cor, cadastrar e buscar carta, vários álbuns, arrastar (com eventos de arrastar simulados), Coleção e Wishlist.
 - Chamadas reais às APIs de Scryfall, YGOPRODeck, TCGdex e Pokémon TCG.
 - No site publicado: página carrega, service worker ativo, 21 arquivos em cache, sem erros no console.

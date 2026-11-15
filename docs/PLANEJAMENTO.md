@@ -1,6 +1,6 @@
 # Planejamento do Sleevebook
 
-Última atualização: 2026-11-14
+Última atualização: 2026-11-15
 
 Fonte de verdade do que o projeto é, do que está pronto e do que falta. Os mockups do planejamento original estão em [mockups/planejamento.html](mockups/planejamento.html).
 
@@ -95,6 +95,7 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 ## Limitações conhecidas
 
 - **Celular**: em telas estreitas o livro mostra uma página por vez (botões, deslizar) e a carta pode ser movida pelo botão "Mover…" do cadastro. Foi testado só em janela estreita no computador, não em celular físico. O arrastar com o mouse continua sendo o jeito direto no computador.
+- **Backup importado**: a importação valida só a estrutura do arquivo, não o conteúdo; importe apenas backups que você mesmo exportou ([segurança](06-seguranca-e-privacidade.md#2-arquivos-de-backup-json-importado)).
 - **Dados só no navegador**: limpar os dados do site apaga o álbum. Use **Exportar** para backup.
 - **Páginas ímpares**: a última tela do livro mostra o verso em branco da última folha.
 - **Preços**: vêm em dólar (TCGplayer), são aproximados e nem toda carta tem preço.

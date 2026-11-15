@@ -33,7 +33,7 @@ O título do PR segue o mesmo padrão, porque o merge é feito com *squash* e o 
 
 ## Decisões técnicas
 
-Escolhas relevantes viram um registro curto em [`docs/adr`](docs/adr), com contexto, decisão e consequências. Assim dá para entender depois por que algo foi feito de certo jeito.
+A documentação completa está em [`docs/`](docs/README.md). Escolhas relevantes viram um registro curto em [`docs/adr`](docs/adr), com contexto, decisão e consequências. Assim dá para entender depois por que algo foi feito de certo jeito.
 
 ## Rodar localmente
 

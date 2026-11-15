@@ -77,7 +77,14 @@ function updateStat() {
 }
 
 /* ---------- Navegação ---------- */
-function onSpread(spread, [left, right], sheets) {
+function onSpread(spread, [left, right], sheets, info) {
+  if (info?.single) {
+    // Modo de uma página (telas estreitas)
+    $('#pos').textContent = `Página ${info.page} de ${info.pages}`;
+    $('#first').disabled = $('#prev').disabled = info.page <= 1;
+    $('#last').disabled = $('#next').disabled = info.page >= info.pages;
+    return;
+  }
   $('#pos').textContent = `Páginas ${left ?? '—'} | ${right ?? '—'}`;
   $('#first').disabled = $('#prev').disabled = spread === 0;
   $('#last').disabled = $('#next').disabled = spread === sheets;
@@ -98,12 +105,12 @@ function wireAlbums() {
 function wireNav() {
   $('#next').onclick = () => book.next();
   $('#prev').onclick = () => book.prev();
-  $('#first').onclick = () => book.goTo(0);
-  $('#last').onclick = () => book.goTo(book.sheets);
+  $('#first').onclick = () => book.showPage(1);
+  $('#last').onclick = () => book.showPage(state.album.pages);
   $('#jump').onchange = e => {
     const p = parseInt(e.target.value, 10);
     e.target.value = '';
-    if (p >= 1 && p <= state.album.pages) book.goTo(spreadForPage(p));
+    if (p >= 1 && p <= state.album.pages) book.showPage(p);
   };
   addEventListener('keydown', e => {
     if (document.querySelector('dialog[open]') || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName)) return;
@@ -159,6 +166,29 @@ function wireSettings() {
   });
 }
 
+/* ---------- Mover carta por toque ---------- */
+// Alternativa ao arrastar (que não funciona em telas de toque): "Mover…" no cadastro e depois toque no slot de destino.
+let movingFrom = null;
+
+function startMove(key, card) {
+  movingFrom = key;
+  $('#moveText').textContent = `Mover "${card?.name ?? 'carta'}": toque no slot de destino`;
+  $('#moveBar').hidden = false;
+  document.body.classList.add('moving');
+}
+
+function endMove() {
+  movingFrom = null;
+  $('#moveBar').hidden = true;
+  document.body.classList.remove('moving');
+}
+
+async function finishMove(slot) {
+  const from = movingFrom;
+  endMove();
+  if (slot.key !== from) await moveCard(from, slot.key);
+}
+
 /* ---------- Cadastro de carta ---------- */
 function wireCards() {
   const form = initCardForm({
@@ -184,13 +214,17 @@ function wireCards() {
       updateStat();
       toast(`${card.name} removida`);
     },
+    onMoveStart: (slot, card) => startMove(slot.key, card),
   });
   app.form = form;
   const search = initSearch({ onPick: data => form.fill(data), getGame: () => state.album.game });
   app.onSlot = slot => {
+    if (movingFrom) { finishMove(slot); return; }
     const rec = state.slots.get(slot.key);
     form.open(slot, rec && state.cards.get(rec.cardId), { beforeOpen: search.reset });
   };
+  $('#moveCancel').onclick = endMove;
+  addEventListener('keydown', e => { if (e.key === 'Escape' && movingFrom) endMove(); });
 }
 
 /* ---------- Seções: Álbum, Coleção, Wishlist ---------- */
@@ -217,7 +251,7 @@ async function renderCollectionView() {
 async function gotoCard(albumId, page) {
   if (albumId !== state.album.id) await switchAlbum(albumId);
   await showView('album');
-  book.goTo(spreadForPage(page));
+  book.showPage(page);
 }
 
 let wishDialog;
@@ -249,7 +283,7 @@ async function wishToAlbum(item) {
   await showView('album');
   book.updateSlot(rec.key);
   updateStat();
-  book.goTo(spreadForPage(free.page));
+  book.showPage(free.page);
   toast(`${card.name} entrou na pág. ${free.page} de "${state.album.name}"`);
 }
 

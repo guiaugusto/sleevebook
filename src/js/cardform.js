@@ -34,7 +34,7 @@ export function readCardFields() {
   };
 }
 
-export function initCardForm({ onSave, onDelete }) {
+export function initCardForm({ onSave, onDelete, onMoveStart }) {
   let slot = null, existing = null, image = '';
 
   const preview = () => { $('#cPrev').style.backgroundImage = image ? `url("${image}")` : 'none'; };
@@ -55,6 +55,7 @@ export function initCardForm({ onSave, onDelete }) {
   });
   $('#cDel').onclick = () => { $('#dlgCard').close(); onDelete(slot, existing); };
   $('#cCancel').onclick = () => $('#dlgCard').close();
+  $('#cMove').onclick = () => { $('#dlgCard').close(); onMoveStart(slot, existing); };
 
   return {
     /** Preenche o formulário com a carta do slot (ou vazio) e abre. */
@@ -67,6 +68,7 @@ export function initCardForm({ onSave, onDelete }) {
       $('#cImg').value = image.startsWith('data:') ? '' : image;
       preview();
       $('#cDel').hidden = !card;
+      $('#cMove').hidden = !card;
       extra.beforeOpen?.();
       $('#dlgCard').showModal();
       $('#cName').focus();

@@ -44,7 +44,7 @@ export function initSearch({ onPick, getGame, ids = CARD_IDS }) {
     try {
       options = await loadFilterOptions(gameSel.value, lang);
       optionsLang = lang;
-      adv.dlSets.innerHTML = options.sets.map(s => `<option value="${esc(s.name)}">${esc(s.id)} · ${s.total} cartas</option>`).join('');
+      adv.dlSets.innerHTML = options.sets.map(s => `<option value="${esc(s.name)}">${esc(s.id)} · ${esc(s.total)} cartas</option>`).join('');
       adv.dlIllus.innerHTML = options.illustrators.map(n => `<option value="${esc(n)}"></option>`).join('');
       const keep = adv.rarity.value;
       adv.rarity.innerHTML = '<option value="">Qualquer</option>' + options.rarities.map(r => `<option>${esc(r)}</option>`).join('');

@@ -22,7 +22,7 @@ export function renderCollection(root, { albums, slots, cards, onGoto }) {
     <div class="grid2">
       <section class="panel"><h3>Álbuns</h3>${prog.map(p => `<div class="prow"><span>${esc(p.album.name)}</span><span class="stat">${p.owned} de ${p.chosen} cartas · ${p.pct}%</span>${bar(p.pct)}</div>`).join('')}</section>
       <section class="panel"><h3>Progresso por set</h3>${sum.sets.length
-        ? sum.sets.slice(0, 12).map(s => `<div class="prow"><span>${esc(s.set)}</span><span class="stat">${s.owned}/${s.total} · ${s.pct}%</span>${bar(s.pct)}</div>`).join('')
+        ? sum.sets.slice(0, 12).map(s => `<div class="prow"><span>${esc(s.set)}</span><span class="stat">${s.owned}/${esc(s.total)} · ${s.pct}%</span>${bar(s.pct)}</div>`).join('')
         : '<p class="hint">Aparece quando você cadastra cartas escolhidas pela busca, que informam o total do set, e marca que tem.</p>'}</section>
     </div>
     <section class="panel">
@@ -30,7 +30,7 @@ export function renderCollection(root, { albums, slots, cards, onGoto }) {
       <div class="filters">
         <input type="search" id="fQ" placeholder="Buscar por nome, set ou número" aria-label="Buscar">
         <select id="fStatus" aria-label="Situação"><option value="">Tenho e faltam</option><option value="owned">Só as que tenho</option><option value="wanted">Só as que faltam</option></select>
-        <select id="fAlbum" aria-label="Álbum"><option value="">Todos os álbuns</option>${albums.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select>
+        <select id="fAlbum" aria-label="Álbum"><option value="">Todos os álbuns</option>${albums.map(a => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('')}</select>
         <select id="fSort" aria-label="Ordenar"><option value="location">Por posição</option><option value="name">Por nome</option><option value="recent">Mais recentes</option></select>
       </div>
       <p class="hint" id="fCount" aria-live="polite"></p>
@@ -53,8 +53,8 @@ export function renderCollection(root, { albums, slots, cards, onGoto }) {
         <td>${esc(c.set)} ${esc(c.number)}${c.language && c.language !== 'en' ? ` <span class="lang">${esc(c.language.toUpperCase())}</span>` : ''}</td>
         <td><span class="pill ${own ? 'have' : 'muted'}">${own ? 'Tenho' : 'Falta'}</span></td>
         <td>${own ? esc((c.condition || '').split(' ')[0]) : '<span class="stat">—</span>'}</td>
-        <td>${own ? (c.qty || 1) : '<span class="stat">—</span>'}</td>
-        <td><button type="button" class="link" data-album="${r.album.id}" data-page="${r.slot.page}">${esc(r.location)}</button></td></tr>`;
+        <td>${own ? esc(c.qty || 1) : '<span class="stat">—</span>'}</td>
+        <td><button type="button" class="link" data-album="${esc(r.album.id)}" data-page="${esc(r.slot.page)}">${esc(r.location)}</button></td></tr>`;
     }).join('');
   }
   [q, fs, fa, fo].forEach(el => el.addEventListener('input', table));

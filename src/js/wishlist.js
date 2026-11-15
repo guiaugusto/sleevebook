@@ -17,7 +17,7 @@ export function renderWishlist(root, { items, onAdd, onEdit, onMove }) {
       <div class="winfo"><b>${esc(i.name)}</b><span class="stat">${esc(i.set)} ${esc(i.number)}</span>
         <span class="pill ${PILL[i.priority] || 'warn'}">Prioridade ${PRIORITIES[i.priority] || 'Média'}</span>
         ${i.notes ? `<small>${esc(i.notes)}</small>` : ''}</div>
-      <div class="wact"><button type="button" class="primary" data-move="${i.id}">Colocar no álbum</button><button type="button" data-edit="${i.id}">Editar</button></div>
+      <div class="wact"><button type="button" class="primary" data-move="${esc(i.id)}">Colocar no álbum</button><button type="button" data-edit="${esc(i.id)}">Editar</button></div>
     </article>`).join('')}</div></div>`;
   $('#wlAdd', root).onclick = onAdd;
   root.onclick = e => {   // atribuição (e não addEventListener) para não acumular ouvintes a cada render

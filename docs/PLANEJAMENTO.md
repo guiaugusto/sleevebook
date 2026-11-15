@@ -50,10 +50,10 @@ Legenda: ⬜ a fazer · ✅ pronto
 
 ### v0.3 · Coleção e dados
 
-- ⬜ Painel: total de cartas, progresso por set
-- ⬜ Lista e busca de toda a coleção, com a localização de cada carta
-- ⬜ Valor estimado
-- ⬜ Wishlist
+- ✅ Painel: total de cartas, progresso por set
+- ✅ Lista e busca de toda a coleção, com a localização de cada carta
+- ✅ Valor estimado
+- ✅ Wishlist
 
 ### v1.0+ · Conta e compartilhamento
 

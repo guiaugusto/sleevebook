@@ -66,8 +66,9 @@ export function createBook(stage, handlers = {}) {
   }
 
   /* ---------- Render ---------- */
-  function render(next) {
+  function render(next, { reset = false } = {}) {
     data = next;
+    if (reset) spread = 0;
     spread = Math.min(spread, total());
     el.classList.add('no-anim');
     const n = total();

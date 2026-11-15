@@ -44,7 +44,7 @@ Legenda: ⬜ a fazer · ✅ pronto
 ### v0.2 · Cartas de verdade
 
 - ✅ Buscar carta em base pública e preencher os campos (Pokémon TCG API com reserva TCGdex, Scryfall, YGOPRODeck)
-- ⬜ Vários álbuns
+- ✅ Vários álbuns
 - ⬜ Mover e trocar cartas de slot arrastando
 - ⬜ Contagem por página (frente e verso)
 

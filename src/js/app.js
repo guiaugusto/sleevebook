@@ -1,7 +1,7 @@
 // Orquestra o app: carrega dados, desenha o livro e liga os botões.
 import { db, meta, exportAll, importAll, validateExport } from './store.js';
 import { createBook } from './book.js';
-import { applyTheme, DEFAULT_COLOR } from './color.js';
+import { applyTheme, DEFAULT_COLOR, SWATCHES as SWATCH_CYCLE } from './color.js';
 import { PRESETS, sanitizeLayout, spreadForPage, slotsInGrid, totalSlots, sheetCount } from './grid.js';
 import { createColorPicker } from './wheel.js';
 import { initCardForm } from './cardform.js';
@@ -9,7 +9,7 @@ import { initSearch } from './search.js';
 import { GAMES } from './providers/index.js';
 import { $, uid, toast, downloadJSON, slug } from './util.js';
 
-const state = { album: null, slots: new Map(), cards: new Map() };
+const state = { albums: [], album: null, slots: new Map(), cards: new Map() };
 let book;
 
 /* ---------- Dados ---------- */
@@ -17,10 +17,13 @@ function newAlbum(over = {}) {
   return { id: uid(), name: 'Meu Álbum', game: 'pokemon', rows: 3, cols: 3, pages: 20, color: DEFAULT_COLOR, createdAt: Date.now(), ...over };
 }
 
-async function loadAlbum() {
+/** Carrega os álbuns e o álbum indicado (ou o último aberto, ou o primeiro). Cria um se não houver nenhum. */
+async function loadAlbum(id) {
   let albums = await db.all('albums');
   if (!albums.length) { const a = newAlbum(); await db.put('albums', a); albums = [a]; }
-  const wanted = await meta.get('currentAlbum');
+  albums.sort((a, b) => a.createdAt - b.createdAt);
+  state.albums = albums;
+  const wanted = id ?? await meta.get('currentAlbum');
   state.album = albums.find(a => a.id === wanted) || albums[0];
   await meta.set('currentAlbum', state.album.id);
   const [slots, cards] = await Promise.all([db.byAlbum(state.album.id), db.all('cards')]);
@@ -28,9 +31,37 @@ async function loadAlbum() {
   state.cards = new Map(cards.map(c => [c.id, c]));
 }
 
-function draw() {
+function renderAlbumSelect() {
+  $('#albumSelect').innerHTML = state.albums.map(a => `<option value="${a.id}">${a.name.replace(/[<>&"]/g, '')}</option>`).join('');
+  $('#albumSelect').value = state.album.id;
+}
+
+async function switchAlbum(id) {
+  await loadAlbum(id);
+  draw({ reset: true });
+}
+
+async function createAlbum() {
+  const n = state.albums.length + 1;
+  const a = newAlbum({ name: `Álbum ${n}`, game: state.album.game, color: SWATCH_CYCLE[n % SWATCH_CYCLE.length] });
+  await db.put('albums', a);
+  await switchAlbum(a.id);
+  $('#btnSettings').click();     // abre a configuração para ajustar o novo álbum
+}
+
+async function deleteAlbum() {
+  const slots = await db.byAlbum(state.album.id);
+  await db.delMany('cards', slots.map(s => s.cardId));
+  await db.delMany('slots', slots.map(s => s.key));
+  await db.del('albums', state.album.id);
+  toast(`Álbum "${state.album.name}" excluído`);
+  await switchAlbum();
+}
+
+function draw({ reset = false } = {}) {
   applyTheme($('#book'), state.album.color);
-  book.render(state);
+  book.render(state, { reset });
+  renderAlbumSelect();
   $('#title').textContent = state.album.name;
   document.title = `${state.album.name} · Sleevebook`;
   updateStat();
@@ -47,6 +78,18 @@ function onSpread(spread, [left, right], sheets) {
   $('#pos').textContent = `Páginas ${left ?? '—'} | ${right ?? '—'}`;
   $('#first').disabled = $('#prev').disabled = spread === 0;
   $('#last').disabled = $('#next').disabled = spread === sheets;
+}
+
+function wireAlbums() {
+  $('#albumSelect').onchange = e => switchAlbum(e.target.value);
+  $('#btnNew').onclick = createAlbum;
+  $('#sDelete').onclick = async () => {
+    $('#delInfo').textContent = `"${state.album.name}" tem ${state.slots.size} carta(s).`;
+    $('#dlgSet').close();
+    $('#dlgDelete').showModal();
+  };
+  $('#delCancel').onclick = () => $('#dlgDelete').close();
+  $('#delConfirm').onclick = async () => { $('#dlgDelete').close(); await deleteAlbum(); };
 }
 
 function wireNav() {
@@ -106,6 +149,7 @@ function wireSettings() {
     const layout = sanitizeLayout({ rows: $('#sRows').value, cols: $('#sCols').value, pages: $('#sPages').value });
     state.album = { ...state.album, name: $('#sName').value.trim() || 'Meu Álbum', game: $('#sGame').value, color: draftColor, ...layout };
     await db.put('albums', state.album);
+    state.albums = state.albums.map(a => (a.id === state.album.id ? state.album : a));
     draw();
     book.goTo(Math.min(book.spread, sheetCount(layout.pages)));
     toast('Álbum atualizado');
@@ -182,7 +226,7 @@ function wireBackup() {
 async function main() {
   book = createBook($('#stage'), { onSpread, onSlot: slot => app.onSlot?.(slot) });
   await loadAlbum();
-  wireNav(); wireSettings(); wireCards(); wireBackup();
+  wireNav(); wireAlbums(); wireSettings(); wireCards(); wireBackup();
   draw();
 }
 

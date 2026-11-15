@@ -22,6 +22,7 @@ button:disabled{opacity:.35;cursor:default}
 header.top{display:flex;align-items:center;gap:10px;padding:10px 16px;background:#0006;flex-wrap:wrap;padding-top:max(10px,env(safe-area-inset-top,0px))}
 header.top h1{font-size:18px;margin:0;flex:1;min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stat{color:var(--muted);font-size:13px}
+#albumSelect{width:auto;max-width:200px;padding:6px 8px}
 
 #stage{flex:1;position:relative;min-height:0;display:flex;align-items:center;justify-content:center;touch-action:pan-y}
 #book{position:relative;width:calc(var(--pw)*2);height:var(--ph);perspective:2600px;

@@ -8,8 +8,8 @@ O Sleevebook é publicado de forma contínua a partir da `master`. Só a versão
 
 **Não publique detalhes de uma falha em uma issue pública.**
 
-- O relato privado do GitHub (aba *Security* → *Report a vulnerability*) **ainda não está ativado** neste repositório. Quando for ativado, será o canal preferido.
-- Enquanto isso, abra uma issue **sem detalhes técnicos**, apenas dizendo que encontrou um problema de segurança e pedindo um contato privado. O mantenedor responde por um canal privado para receber o relato completo.
+- Use o **relato privado do GitHub**: na aba *Security* do repositório, clique em *Report a vulnerability*. Só o mantenedor vê o relato, e a conversa e a correção acontecem ali.
+- Se por algum motivo não conseguir usá-lo, abra uma issue **sem detalhes técnicos**, apenas dizendo que encontrou um problema de segurança e pedindo um contato privado.
 
 Ao reportar, ajuda incluir: o que acontece, como reproduzir, o impacto que você enxerga e o navegador usado.
 

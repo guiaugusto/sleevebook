@@ -113,6 +113,13 @@ body.moving .slot[data-page]{outline:2px dashed var(--accent);outline-offset:-2p
 .slot.noimg{background:linear-gradient(135deg,#3b4262,#222a45)}
 .slot .label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:calc(5*var(--u));
   font-size:calc(10*var(--u));line-height:1.2;font-weight:600;pointer-events:none}
+/* Carta que ainda não tenho: mesma carta, em cinza, como um lugar reservado na coleção dos sonhos */
+.slot.missing img{filter:grayscale(1) brightness(.8) contrast(.9);opacity:.72}
+.slot.missing.noimg{background:#3b3e47}
+.slot.missing .label{color:#b9bcc6}
+.thumb.gray{filter:grayscale(1) opacity(.7)}
+.missing-row td{color:var(--muted)}
+.pill.have{color:#4cc790}
 .slot .shine{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .2s;mix-blend-mode:color-dodge;
   background:radial-gradient(circle at var(--mx,50%) var(--my,50%),#ffffffaa,transparent 55%)}
 .slot.filled:hover .shine{opacity:.5}
@@ -145,6 +152,10 @@ dialog#dlgCard{max-height:94vh;overflow-y:auto}
 .sw button{width:26px;height:26px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line);padding:0}
 [hidden]{display:none!important}
 .searchbox{border:1px solid var(--line);border-radius:10px;padding:0 12px 12px;margin-bottom:6px;background:#ffffff08}
+.ownedbox{display:flex;gap:10px;align-items:flex-start;background:#ffffff0d;border:1px solid var(--line);border-radius:10px;
+  padding:10px 12px;margin:12px 0 0;color:var(--ink);font-size:14px;cursor:pointer}
+.ownedbox input{width:auto;margin-top:3px;accent-color:var(--accent)}
+.ownedbox small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 .adv{margin-top:8px}
 .adv summary{cursor:pointer;color:var(--accent);font-size:13px}
 .adv .row{margin-top:2px}

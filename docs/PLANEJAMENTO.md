@@ -41,8 +41,8 @@ Um álbum digital para catalogar coleções de cartas TCG, no formato de um álb
 ```
 Album    { id, name, game, rows, cols, pages, color, createdAt }
 Slot     { key, albumId, page, row, col, cardId }
-Card     { id, name, set, setTotal, number, image, condition, qty, notes, price, source, sourceId, updatedAt }
-Wishlist { id, name, set, number, image, priority, notes, setTotal, price, source, sourceId }
+Card     { id, name, set, setTotal, number, image, condition, qty, notes, owned, source, sourceId, updatedAt }   // owned === false: ainda não tenho (cinza no álbum); sem o campo = tenho
+Wishlist { id, name, set, number, image, priority, notes, setTotal, source, sourceId }
 ```
 
 A chave de um slot é `albumId:página:linha:coluna`. Reduzir a grade não apaga cartas: as que ficam fora continuam guardadas e voltam se a grade aumentar.
@@ -71,7 +71,8 @@ Legenda: ⬜ a fazer · ✅ pronto · 🟡 parcial
 
 - ✅ Painel: total de cartas, cópias, álbuns e progresso por álbum e por set ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
 - ✅ Lista e busca de toda a coleção, com filtros, ordenação e a localização de cada carta ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
-- ✅ Valor estimado, a partir do preço da busca ou digitado ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
+- ⏸ Valor estimado: **adiado** por decisão do usuário. Os preços saíram da interface (cadastro, busca, Coleção); o app não preenche nem mostra mais preço. Cartas antigas podem ter o campo `price` guardado, que fica sem uso ([#12](https://github.com/guiaugusto/sleevebook/issues/12))
+- ✅ Cartas "tenho" e "ainda quero": cada carta tem o marcador "Já tenho esta carta"; as que faltam aparecem em cinza no álbum, com contagem "faltam" e filtro na Coleção; progresso por álbum e por set conta só as que tenho
 - ✅ Wishlist com prioridade e atalho "Colocar no álbum" ([#25](https://github.com/guiaugusto/sleevebook/pull/25))
 
 ### v1.0+

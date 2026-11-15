@@ -29,10 +29,15 @@ export function readCardFields() {
     number: $('#cNum').value.trim(),
     condition: $('#cCond').value,
     qty: Math.max(1, parseInt($('#cQty').value, 10) || 1),
-    price: $('#cPrice').value === '' ? null : Math.max(0, parseFloat($('#cPrice').value) || 0),
     notes: $('#cNotes').value.trim(),
+    owned: $('#cOwned').checked,
   };
 }
+
+// Cartas novas começam com a última escolha ("tenho" ou "ainda quero"), para quem está montando uma lista de desejos.
+const OWNED_KEY = 'sleevebook-new-card-owned';
+const readOwnedDefault = () => { try { return localStorage.getItem(OWNED_KEY) !== '0'; } catch { return true; } };
+const writeOwnedDefault = v => { try { localStorage.setItem(OWNED_KEY, v ? '1' : '0'); } catch { /* sem armazenamento: usa sempre "tenho" */ } };
 
 export function initCardForm({ onSave, onDelete, onMoveStart }) {
   let slot = null, existing = null, image = '';
@@ -50,9 +55,14 @@ export function initCardForm({ onSave, onDelete, onMoveStart }) {
 
   $('#formCard').addEventListener('submit', e => {
     if (e.submitter?.id !== 'cSave') return;
-    onSave(slot, { ...(existing || {}), ...readCardFields(), image, source: existing?.source || 'manual', sourceId: existing?.sourceId || null,
+    const fields = readCardFields();
+    if (!slot.hadCard) writeOwnedDefault(fields.owned);
+    onSave(slot, { ...(existing || {}), ...fields, image, source: existing?.source || 'manual', sourceId: existing?.sourceId || null,
       setTotal: existing?.setTotal ?? null });
   });
+  // "Ainda quero": condição e quantidade só fazem sentido para quem tem a carta.
+  const syncOwned = () => { $('#ownedFields').hidden = !$('#cOwned').checked; };
+  $('#cOwned').addEventListener('change', syncOwned);
   $('#cDel').onclick = () => { $('#dlgCard').close(); onDelete(slot, existing); };
   $('#cCancel').onclick = () => $('#dlgCard').close();
   $('#cMove').onclick = () => { $('#dlgCard').close(); onMoveStart(slot, existing); };
@@ -60,11 +70,12 @@ export function initCardForm({ onSave, onDelete, onMoveStart }) {
   return {
     /** Preenche o formulário com a carta do slot (ou vazio) e abre. */
     open(s, card, extra = {}) {
-      slot = s; existing = card || null; image = card?.image || '';
+      slot = { ...s, hadCard: !!card }; existing = card || null; image = card?.image || '';
       $('#cardTitle').textContent = `${card ? 'Editar carta' : 'Nova carta'} · ${describeSlot(s)}`;
       $('#cName').value = card?.name || ''; $('#cSet').value = card?.set || ''; $('#cNum').value = card?.number || '';
       $('#cCond').value = card?.condition || CONDITIONS[1]; $('#cQty').value = card?.qty || 1;
-      $('#cPrice').value = card?.price ?? ''; $('#cNotes').value = card?.notes || ''; $('#cFile').value = '';
+      $('#cOwned').checked = card ? card.owned !== false : readOwnedDefault(); syncOwned();
+      $('#cNotes').value = card?.notes || ''; $('#cFile').value = '';
       $('#cImg').value = image.startsWith('data:') ? '' : image;
       preview();
       $('#cDel').hidden = !card;
@@ -78,7 +89,6 @@ export function initCardForm({ onSave, onDelete, onMoveStart }) {
       if (data.name != null) $('#cName').value = data.name;
       if (data.set != null) $('#cSet').value = data.set;
       if (data.number != null) $('#cNum').value = data.number;
-      if (data.price != null) $('#cPrice').value = data.price;
       if (data.image != null) { image = data.image; $('#cImg').value = image; preview(); }
       existing = { ...(existing || {}), source: data.source ?? existing?.source, sourceId: data.sourceId ?? existing?.sourceId, setTotal: data.setTotal ?? existing?.setTotal };
     },

@@ -35,7 +35,7 @@ export function initWishlistDialog({ onSave, onDelete, getGame }) {
     ids: { box: '#wSearchBox', input: '#wqSearch', list: '#wqResults', status: '#wqStatus', game: '#wqGame' },
     onPick: data => {
       $('#wName').value = data.name; $('#wSet').value = data.set; $('#wNum').value = data.number;
-      extra = { image: data.image, source: data.source, sourceId: data.sourceId, setTotal: data.setTotal, price: data.price };
+      extra = { image: data.image, source: data.source, sourceId: data.sourceId, setTotal: data.setTotal };
     },
   });
   $('#formWish').addEventListener('submit', e => {

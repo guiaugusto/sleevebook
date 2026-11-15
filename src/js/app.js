@@ -2,7 +2,7 @@
 import { db, meta, exportAll, importAll, validateExport } from './store.js';
 import { createBook } from './book.js';
 import { applyTheme, DEFAULT_COLOR, SWATCHES as SWATCH_CYCLE } from './color.js';
-import { PRESETS, sanitizeLayout, slotsInGrid, totalSlots, totalSheets, parseSlotKey, countByPage } from './grid.js';
+import { PRESETS, sanitizeLayout, slotsInGrid, totalSlots, totalSheets, parseSlotKey } from './grid.js';
 import { createColorPicker } from './wheel.js';
 import { initCardForm } from './cardform.js';
 import { initSearch } from './search.js';
@@ -70,10 +70,21 @@ function draw({ reset = false } = {}) {
   updateStat();
 }
 
+/** Quantas cartas dos slots dados eu tenho e quantas ainda faltam (`owned === false`). */
+function cardCounts(slotList) {
+  let owned = 0, wanted = 0;
+  for (const s of slotList) {
+    const card = state.cards.get(s.cardId);
+    if (!card) continue;
+    if (card.owned === false) wanted++; else owned++;
+  }
+  return { owned, wanted };
+}
+
 function updateStat() {
   const a = state.album;
-  const filled = slotsInGrid(a, [...state.slots.values()]).length;
-  $('#stat').textContent = `${filled}/${totalSlots(a)} slots · ${a.rows}×${a.cols} · ${a.pages} págs.`;
+  const { owned, wanted } = cardCounts(slotsInGrid(a, [...state.slots.values()]));
+  $('#stat').textContent = `${owned}/${totalSlots(a)} cartas${wanted ? ` · ${wanted} faltam` : ''} · ${a.rows}×${a.cols} · ${a.pages} págs.`;
   renderPos();
 }
 
@@ -100,9 +111,8 @@ function renderPos() {
     shown = [left, right].filter(p => p !== null);
   }
   if (shown.length) {
-    const counts = countByPage(state.album, [...state.slots.values()]);
-    const filled = shown.reduce((n, p) => n + (counts[p] || 0), 0);
-    text += ` · ${filled}/${shown.length * state.album.rows * state.album.cols} cartas`;
+    const { owned, wanted } = cardCounts([...state.slots.values()].filter(s => shown.includes(s.page)));
+    text += ` · ${owned}/${shown.length * state.album.rows * state.album.cols} cartas${wanted ? ` · ${wanted} faltam` : ''}`;
   }
   $('#pos').textContent = text;
   $('#first').disabled = $('#prev').disabled = atStart;
@@ -290,7 +300,7 @@ async function wishToAlbum(item) {
   if (!free) { toast(`O álbum "${state.album.name}" está cheio.`); return; }
   const card = {
     id: uid(), name: item.name, set: item.set, setTotal: item.setTotal ?? null, number: item.number, image: item.image || '',
-    condition: 'NM (Near Mint)', qty: 1, price: item.price ?? null, notes: item.notes || '',
+    condition: 'NM (Near Mint)', qty: 1, owned: true, notes: item.notes || '',
     source: item.source || 'manual', sourceId: item.sourceId || null, updatedAt: Date.now(),
   };
   const rec = { key: free.key, albumId: state.album.id, page: free.page, row: free.row, col: free.col, cardId: card.id };

@@ -43,7 +43,8 @@ export function createBook(stage, handlers = {}) {
     const attrs = `data-key="${esc(key)}" data-page="${page}" data-row="${row}" data-col="${col}" role="button" tabindex="0"`;
     if (!card) return `<div class="slot" ${attrs} aria-label="Slot ${idx} vazio"><span class="plus">+</span></div>`;
     // Sem texto em cima da carta: os detalhes aparecem ao clicar no slot. Só cartas sem imagem mostram o nome.
-    return `<div class="slot filled ${card.image ? '' : 'noimg'}" ${attrs} draggable="true" aria-label="${esc(card.name)}">
+    const missing = card.owned === false;   // "ainda não tenho": aparece em cinza
+    return `<div class="slot filled ${card.image ? '' : 'noimg'}${missing ? ' missing' : ''}" ${attrs} draggable="true" aria-label="${esc(card.name)}${missing ? ' (ainda não tenho)' : ''}">
       ${card.image ? `<img src="${esc(card.image)}" alt="" loading="lazy" draggable="false">` : `<div class="label">${esc(card.name)}</div>`}
       <div class="shine"></div></div>`;
   }

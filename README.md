@@ -36,7 +36,7 @@ Depois abra <http://localhost:8080>. Os testes ficam em <http://localhost:8080/t
 
 ## Publicando
 
-O site é estático: qualquer hospedagem de arquivos serve. Há um workflow para o GitHub Pages em `.github/workflows/pages.yml`, hoje com gatilho manual porque o Pages não está disponível para repositórios privados no plano gratuito. Para ativar: torne o repositório público, em Settings → Pages escolha a fonte "GitHub Actions" e troque o gatilho do workflow para `push` na `master` (instruções no próprio arquivo).
+O site está publicado em <https://guiaugusto.github.io/sleevebook/>. A cada push na `master`, o workflow `.github/workflows/pages.yml` publica no GitHub Pages (Settings → Pages com a fonte "GitHub Actions"). O site é estático, então qualquer outra hospedagem de arquivos também serve.
 
 O app é instalável e abre offline (PWA). Os dados ficam no navegador (IndexedDB); use **Exportar** para fazer backup.
 

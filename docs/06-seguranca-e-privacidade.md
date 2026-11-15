@@ -110,4 +110,4 @@ O IndexedDB **não é cifrado**: quem tiver acesso ao navegador do usuário (por
 
 ## Reportar uma vulnerabilidade
 
-Veja [SECURITY.md](../SECURITY.md). Em resumo: não publique detalhes de uma falha em uma issue pública; avise o mantenedor pelos canais descritos lá.
+Veja [SECURITY.md](../SECURITY.md). Em resumo: não publique detalhes de uma falha em uma issue pública; use o relato privado do GitHub (aba *Security* → *Report a vulnerability*).

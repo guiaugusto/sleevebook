@@ -49,3 +49,7 @@ O cadastro preenche a carta a partir de bases públicas. Os três jogos suportad
 - A carta guarda o **idioma** (`language`), que aparece como etiqueta (JA, KO…) nos resultados e na lista da Coleção.
 - **Imagens**: o TCGdex traz a imagem do idioma da carta. O complemento pelo CDN do Scrydex só vale para inglês e japonês (`s12a_ja-200`); nos outros idiomas não se arrisca uma figura de outro idioma. A Pokémon TCG API só entra em buscas em inglês.
 - A raridade "None" do TCGdex (carta sem raridade) deixou de ser mostrada.
+
+## Atualização 5 (2026-11-15): idioma sempre à vista
+
+O seletor "Idioma da carta" ficava dentro de "Filtros", fechado por padrão, e a busca começava em inglês; quem procurava uma carta japonesa não via por onde mudar. Agora o idioma fica ao lado de "Jogo", sempre visível (só para Pokémon), e depois de cada busca aparece "Não é a carta que procura? Tente em outro idioma:" com um botão por idioma (japonês, coreano, chinês, português, inglês, francês, alemão, espanhol e italiano) que refaz a busca naquele idioma.

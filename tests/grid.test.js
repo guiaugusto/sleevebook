@@ -1,5 +1,5 @@
 import { test, eq } from './run.js';
-import { sanitizeLayout, sheetCount, slotKey, parseSlotKey, inGrid, visiblePages, spreadForPage, countByPage, totalSlots, firstEmptySlot } from '../src/js/grid.js';
+import { sanitizeLayout, sheetCount, totalSheets, slotKey, parseSlotKey, inGrid, visiblePages, spreadForPage, countByPage, totalSlots, firstEmptySlot } from '../src/js/grid.js';
 
 test('sanitizeLayout limita grade e páginas', () => {
   eq(sanitizeLayout({ rows: 0, cols: 99, pages: '' }), { rows: 1, cols: 6, pages: 1 });
@@ -20,16 +20,22 @@ test('inGrid respeita limites', () => {
   eq(inGrid(a, { page: 1, row: 3, col: 0 }), false);
   eq(inGrid(a, { page: 0, row: 0, col: 0 }), false);
 });
-test('visiblePages: capa, miolo e fim com número par e ímpar de páginas', () => {
-  eq(visiblePages(0, 20), [null, 1]);
-  eq(visiblePages(1, 20), [2, 3]);
-  eq(visiblePages(10, 20), [20, null]);
-  eq(visiblePages(2, 3), [null, null]);
-  eq(visiblePages(1, 3), [2, 3]);
+test('totalSheets conta a capa e a contracapa', () => {
+  eq(totalSheets(20), 12); eq(totalSheets(15), 10); eq(totalSheets(1), 3);
+});
+test('visiblePages: fechado, capa de dentro + página 1, miolo e fim (páginas pares e ímpares)', () => {
+  eq(visiblePages(0, 20), [null, null]);      // fechado, mostrando a capa
+  eq(visiblePages(1, 20), [null, 1]);         // capa de dentro à esquerda, página 1 à direita
+  eq(visiblePages(2, 20), [2, 3]);
+  eq(visiblePages(10, 20), [18, 19]);
+  eq(visiblePages(11, 20), [20, null]);       // última página + capa de dentro da contracapa
+  eq(visiblePages(12, 20), [null, null]);     // fechado, mostrando a contracapa
+  eq(visiblePages(8, 15), [14, 15]);
+  eq(visiblePages(9, 15), [null, null]);      // folha em branco + capa de dentro da contracapa
 });
 test('spreadForPage leva à folha em que a página aparece', () => {
-  eq(spreadForPage(1), 0); eq(spreadForPage(2), 1); eq(spreadForPage(3), 1); eq(spreadForPage(7), 3); eq(spreadForPage(8), 4);
-  for (let p = 1; p <= 20; p++) eq(visiblePages(spreadForPage(p), 20).includes(p), true, `página ${p}`);
+  eq(spreadForPage(1), 1); eq(spreadForPage(2), 2); eq(spreadForPage(3), 2); eq(spreadForPage(7), 4); eq(spreadForPage(8), 5);
+  for (const total of [1, 2, 15, 20]) for (let p = 1; p <= total; p++) eq(visiblePages(spreadForPage(p), total).includes(p), true, `página ${p} de ${total}`);
 });
 test('countByPage ignora cartas fora da grade', () => {
   const a = { rows: 2, cols: 2, pages: 2 };

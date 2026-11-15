@@ -9,7 +9,7 @@
 Acompanhe o que já está pronto no [roadmap](docs/PLANEJAMENTO.md#roadmap).
 
 - Álbum com grade e número de páginas configuráveis
-- Visual de livro com páginas que viram (botões, teclado e deslize no celular)
+- Visual de fichário: começa fechado, abre com a capa de dentro à esquerda e a página 1 à direita; páginas que viram (botões, teclado e deslize no celular)
 - Cor do álbum por roda de cores ou hexadecimal, com papel, bolsos e texto adaptados
 - Cadastro de carta por slot, com busca em bases públicas (Pokémon, Magic, Yu-Gi-Oh!) e, para Pokémon, filtros por set, raridade, ilustrador e idioma
 - Vários álbuns, arrastar cartas entre slots

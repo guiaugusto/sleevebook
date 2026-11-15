@@ -2,7 +2,7 @@
 import { db, meta, exportAll, importAll, validateExport } from './store.js';
 import { createBook } from './book.js';
 import { applyTheme, DEFAULT_COLOR, SWATCHES as SWATCH_CYCLE } from './color.js';
-import { PRESETS, sanitizeLayout, spreadForPage, slotsInGrid, totalSlots, sheetCount, parseSlotKey } from './grid.js';
+import { PRESETS, sanitizeLayout, slotsInGrid, totalSlots, totalSheets, parseSlotKey, countByPage } from './grid.js';
 import { createColorPicker } from './wheel.js';
 import { initCardForm } from './cardform.js';
 import { initSearch } from './search.js';
@@ -74,20 +74,39 @@ function updateStat() {
   const a = state.album;
   const filled = slotsInGrid(a, [...state.slots.values()]).length;
   $('#stat').textContent = `${filled}/${totalSlots(a)} slots · ${a.rows}×${a.cols} · ${a.pages} págs.`;
+  renderPos();
 }
 
 /* ---------- Navegação ---------- */
-function onSpread(spread, [left, right], sheets, info) {
+let lastNav = null;
+function onSpread(spread, visible, sheets, info) {
+  lastNav = { spread, visible, sheets, info };
+  renderPos();
+}
+
+/** Texto e botões da barra de páginas. Também mostra quantas cartas há nas páginas à vista. */
+function renderPos() {
+  if (!lastNav || !state.album) return;
+  const { spread, visible: [left, right], sheets, info } = lastNav;
+  let text, atStart, atEnd, shown;
   if (info?.single) {
-    // Modo de uma página (telas estreitas)
-    $('#pos').textContent = `Página ${info.page} de ${info.pages}`;
-    $('#first').disabled = $('#prev').disabled = info.page <= 1;
-    $('#last').disabled = $('#next').disabled = info.page >= info.pages;
-    return;
+    // Modo de uma página (telas estreitas): capa → páginas → contracapa
+    text = info.pos === 0 ? 'Capa' : info.pos === info.pages + 1 ? 'Contracapa' : `Página ${info.pos} de ${info.pages}`;
+    atStart = info.pos <= 0; atEnd = info.pos >= info.pages + 1;
+    shown = info.pos >= 1 && info.pos <= info.pages ? [info.pos] : [];
+  } else {
+    text = spread === 0 ? 'Capa' : spread === sheets ? 'Contracapa' : `Páginas ${left ?? '—'} | ${right ?? '—'}`;
+    atStart = spread === 0; atEnd = spread === sheets;
+    shown = [left, right].filter(p => p !== null);
   }
-  $('#pos').textContent = `Páginas ${left ?? '—'} | ${right ?? '—'}`;
-  $('#first').disabled = $('#prev').disabled = spread === 0;
-  $('#last').disabled = $('#next').disabled = spread === sheets;
+  if (shown.length) {
+    const counts = countByPage(state.album, [...state.slots.values()]);
+    const filled = shown.reduce((n, p) => n + (counts[p] || 0), 0);
+    text += ` · ${filled}/${shown.length * state.album.rows * state.album.cols} cartas`;
+  }
+  $('#pos').textContent = text;
+  $('#first').disabled = $('#prev').disabled = atStart;
+  $('#last').disabled = $('#next').disabled = atEnd;
 }
 
 function wireAlbums() {
@@ -161,7 +180,7 @@ function wireSettings() {
     await db.put('albums', state.album);
     state.albums = state.albums.map(a => (a.id === state.album.id ? state.album : a));
     draw();
-    book.goTo(Math.min(book.spread, sheetCount(layout.pages)));
+    book.goTo(Math.min(book.spread, totalSheets(layout.pages)));
     toast('Álbum atualizado');
   });
 }

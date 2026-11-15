@@ -1,9 +1,9 @@
 /* Sleevebook: aparência "mesa escura" com o álbum em destaque.
-   Cores do álbum vêm de variáveis CSS (--alb, --alb-ink, --paper, --pocket) definidas por álbum (ADR 0003). */
+   Cores do álbum vêm de variáveis CSS (--alb, --alb-ink, --page, --inside) definidas por álbum (ADR 0003). */
 :root{
   --bg:#12141b; --panel:#1c2029; --ink:#e8eaf2; --muted:#98a0b4; --line:#ffffff22; --accent:#f5b83d; --accent-ink:#1a1405;
   --danger:#ff8a8a;
-  --alb:#2c3e8f; --alb-ink:#ffffff; --paper:#eef0f5; --pocket:#dde1ea; --paper-ink:#6b7186;
+  --alb:#2c3e8f; --alb-ink:#ffffff; --page:#34479e; --inside:#26357a; --pocket:#00000042; --pocket-edge:#ffffff3d;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -66,51 +66,56 @@ button.link{background:none;border:0;padding:0;color:var(--accent);text-align:le
 body.moving .slot[data-page]{outline:2px dashed var(--accent);outline-offset:-2px}
 #stage.single{overflow:hidden}
 #stage{flex:1;position:relative;min-height:0;display:flex;align-items:center;justify-content:center;touch-action:pan-y}
+/* Fichário: capa dura (cor do álbum), páginas na cor do álbum e bolsos de plástico transparente.
+   Todas as medidas usam --u (tamanho calculado para caber na tela). */
 #book{position:relative;width:calc(var(--pw)*2);height:var(--ph);perspective:2600px;
   transition:transform .8s cubic-bezier(.5,0,.2,1)}
-/* Capa do álbum: cobre as duas metades, ou só a metade visível na primeira e na última página */
-.cover{position:absolute;z-index:-1;top:calc(-14*var(--u));bottom:calc(-14*var(--u));left:calc(-14*var(--u));right:calc(-14*var(--u));
-  background:linear-gradient(135deg,#ffffff1f,transparent 40%),var(--alb);border-radius:calc(10*var(--u));
-  box-shadow:0 16px 40px #000a,inset 0 0 0 calc(2*var(--u)) #ffffff1f;
-  transition:left .8s cubic-bezier(.5,0,.2,1),right .8s cubic-bezier(.5,0,.2,1)}
-#book.is-first .cover{left:calc(50% - 6*var(--u))}
-#book.is-last .cover{right:calc(50% - 6*var(--u))}
 .sheet{position:absolute;left:50%;top:0;width:var(--pw);height:var(--ph);transform-origin:left center;
   transform-style:preserve-3d;transition:transform .8s cubic-bezier(.5,0,.2,1)}
+/* Capas duras: um pouco maiores que as páginas, como a capa de um fichário */
+.sheet.hard{top:calc(-10*var(--u));height:calc(var(--ph) + 20*var(--u));width:calc(var(--pw) + 10*var(--u))}
 .sheet.flipped{transform:rotateY(-180deg)}
 .no-anim,.no-anim *{transition:none!important}
-.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
-  background:var(--paper);padding:calc(14*var(--u));display:flex;flex-direction:column;box-shadow:0 2px 8px #0004}
-.face.front{border-radius:0 calc(5*var(--u)) calc(5*var(--u)) 0;background:linear-gradient(90deg,#0002,transparent 6%),var(--paper)}
-.face.back{transform:rotateY(180deg);border-radius:calc(5*var(--u)) 0 0 calc(5*var(--u));background:linear-gradient(270deg,#0002,transparent 6%),var(--paper)}
-.face.blank{background:var(--alb);color:var(--alb-ink);align-items:center;justify-content:center;font-size:calc(12*var(--u));letter-spacing:.2em;text-transform:uppercase}
-.ph{display:flex;justify-content:space-between;color:var(--paper-ink);height:calc(24*var(--u));font-size:calc(11*var(--u));
-  letter-spacing:.08em;text-transform:uppercase;align-items:flex-start;gap:8px}
-.ph span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.grid{display:grid;gap:calc(8*var(--u));justify-content:center;align-content:start}
-.slot{width:calc(63*var(--u));height:calc(88*var(--u));border-radius:calc(4*var(--u));position:relative;background:var(--pocket);
-  box-shadow:inset 0 0 0 calc(1.5*var(--u)) #00000014,inset 0 calc(3*var(--u)) calc(6*var(--u)) #0002;
-  display:flex;align-items:center;justify-content:center;color:var(--paper-ink);font-size:calc(11*var(--u));overflow:hidden;
-  transition:transform .15s}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--page);
+  padding:calc(12*var(--u));display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px #0005}
+.face.front{border-radius:0 calc(4*var(--u)) calc(4*var(--u)) 0;background:linear-gradient(90deg,#0000004d,transparent 7%),var(--page)}
+.face.back{transform:rotateY(180deg);border-radius:calc(4*var(--u)) 0 0 calc(4*var(--u));background:linear-gradient(270deg,#0000004d,transparent 7%),var(--page)}
+.face.page-blank{background:var(--page)}
+/* Capa de fora e capa de dentro */
+.face.cover-out{color:var(--alb-ink);padding:0}
+.face.front.cover-out{border-radius:0 calc(9*var(--u)) calc(9*var(--u)) 0;
+  background:linear-gradient(90deg,#00000066,transparent 5%),linear-gradient(135deg,#ffffff2e,transparent 45%),var(--alb)}
+.face.back.cover-out{border-radius:calc(9*var(--u)) 0 0 calc(9*var(--u));
+  background:linear-gradient(270deg,#00000066,transparent 5%),linear-gradient(225deg,#ffffff2e,transparent 45%),var(--alb)}
+.face.cover-in{padding:0}
+.face.front.cover-in{border-radius:0 calc(9*var(--u)) calc(9*var(--u)) 0;background:linear-gradient(90deg,#00000066,transparent 6%),var(--inside)}
+.face.back.cover-in{border-radius:calc(9*var(--u)) 0 0 calc(9*var(--u));background:linear-gradient(270deg,#00000066,transparent 6%),var(--inside)}
+.cover-title{max-width:80%;text-align:center;font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:calc(13*var(--u));
+  line-height:1.3;overflow-wrap:anywhere;opacity:.92;text-shadow:0 1px 0 #ffffff33,0 -1px 0 #00000055}
+.cover-title::before{content:"";display:block;width:calc(34*var(--u));height:calc(2*var(--u));margin:0 auto calc(10*var(--u));background:currentColor;opacity:.5;border-radius:2px}
+
+.grid{display:grid;gap:calc(5*var(--u));justify-content:center;align-content:center}
+/* Bolso de plástico transparente: abertura mais escura que a página, borda clara e brilho */
+.slot{width:calc(63*var(--u));height:calc(88*var(--u));border-radius:calc(3*var(--u));position:relative;background:var(--pocket);
+  box-shadow:inset 0 0 0 1px var(--pocket-edge),inset 0 calc(2*var(--u)) calc(5*var(--u)) #0006,0 1px 0 #ffffff24;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:calc(11*var(--u));overflow:hidden;transition:transform .15s}
+.slot::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,#ffffff30,transparent 36%,transparent 68%,#ffffff14)}
 .slot[data-page]{cursor:pointer}
 .slot[data-page]:hover{transform:translateY(calc(-2*var(--u)))}
 .slot.filled[draggable="true"]{cursor:grab}
 .slot.dragging{opacity:.35}
 .slot.over{outline:calc(2*var(--u)) dashed var(--accent);outline-offset:calc(-2*var(--u))}
-.ph b{font-weight:600;font-variant-numeric:tabular-nums}
-.slot .n{position:absolute;top:calc(4*var(--u));left:calc(5*var(--u));font-size:calc(9*var(--u));opacity:.7}
-.slot .plus{font-size:calc(22*var(--u));opacity:.45}
-.slot.filled{box-shadow:0 calc(2*var(--u)) calc(6*var(--u)) #0005;background:#222;color:#fff}
+.slot .plus{font-size:calc(22*var(--u));opacity:0;transition:opacity .15s}
+.slot:not(.filled):hover .plus{opacity:.55}
+.slot.filled{background:#1b1d27}
 .slot img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
-.slot .label{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:calc(5*var(--u));
-  background:linear-gradient(transparent 50%,#000c);color:#fff;font-size:calc(9*var(--u));line-height:1.2;pointer-events:none}
 .slot.noimg{background:linear-gradient(135deg,#3b4262,#222a45)}
-.slot.noimg .label{background:none;justify-content:center;text-align:center;font-size:calc(11*var(--u))}
+.slot .label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:calc(5*var(--u));
+  font-size:calc(10*var(--u));line-height:1.2;font-weight:600;pointer-events:none}
 .slot .shine{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .2s;mix-blend-mode:color-dodge;
   background:radial-gradient(circle at var(--mx,50%) var(--my,50%),#ffffffaa,transparent 55%)}
 .slot.filled:hover .shine{opacity:.5}
-.qty{position:absolute;top:calc(3*var(--u));right:calc(3*var(--u));background:var(--accent);color:var(--accent-ink);border-radius:99px;
-  font-size:calc(9*var(--u));font-weight:700;padding:0 calc(5*var(--u));pointer-events:none}
 
 nav.pager{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px;background:#0006;flex-wrap:wrap;
   padding-bottom:max(10px,env(safe-area-inset-bottom,0px))}

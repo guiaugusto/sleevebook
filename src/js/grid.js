@@ -21,8 +21,15 @@ export function sanitizeLayout({ rows, cols, pages }) {
   return { rows: clamp(rows, 1, MAX_GRID), cols: clamp(cols, 1, MAX_GRID), pages: clamp(pages, 1, MAX_PAGES) };
 }
 
-/** Folhas físicas: cada folha tem duas páginas (frente e verso). */
+/** Folhas de páginas: cada folha tem duas páginas (frente e verso). */
 export const sheetCount = pages => Math.ceil(pages / 2);
+
+/**
+ * Folhas do livro inteiro: a capa (frente = capa de fora, verso = capa de dentro), as folhas de páginas e a
+ * contracapa (frente = capa de dentro, verso = capa de fora). `spread` vai de 0 (fechado, mostrando a capa)
+ * até `totalSheets` (fechado, mostrando a contracapa).
+ */
+export const totalSheets = pages => sheetCount(pages) + 2;
 
 export const slotKey = (albumId, page, row, col) => `${albumId}:${page}:${row}:${col}`;
 
@@ -38,17 +45,18 @@ export const totalSlots = a => a.rows * a.cols * a.pages;
 export const inGrid = (a, s) => s.page >= 1 && s.page <= a.pages && s.row >= 0 && s.row < a.rows && s.col >= 0 && s.col < a.cols;
 
 /**
- * Páginas visíveis quando `spread` folhas já foram viradas.
- * spread 0 mostra só a página 1 (direita); depois, esquerda = 2·spread e direita = 2·spread + 1.
+ * Páginas visíveis quando `spread` folhas já foram viradas. Spread 0 é o livro fechado (nenhuma página).
+ * Spread 1 mostra a capa de dentro à esquerda e a página 1 à direita; depois, esquerda = 2·(spread−1) e
+ * direita = 2·spread − 1. `null` = não há página (capa de dentro, capa de fora ou folha em branco).
  */
 export function visiblePages(spread, pages) {
-  const left = spread > 0 && spread * 2 <= pages ? spread * 2 : null;
-  const right = spread * 2 + 1 <= pages ? spread * 2 + 1 : null;
+  const left = spread >= 2 && 2 * (spread - 1) <= pages ? 2 * (spread - 1) : null;
+  const right = spread >= 1 && 2 * spread - 1 <= pages ? 2 * spread - 1 : null;
   return [left, right];
 }
 
 /** Quantas folhas precisam estar viradas para a página `p` ficar visível. */
-export const spreadForPage = p => (p % 2 ? (p - 1) / 2 : p / 2);
+export const spreadForPage = p => (p % 2 ? (p + 1) / 2 : p / 2 + 1);
 
 /** Slots ({page,row,col}) que estão dentro da grade. */
 export const slotsInGrid = (album, slots) => slots.filter(s => inGrid(album, s));

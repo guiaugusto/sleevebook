@@ -2,7 +2,7 @@
 // Arquivos do próprio site: tenta a rede primeiro (para você sempre ver a versão mais nova) e cai no cache se estiver offline.
 // Requisições para outros sites (busca de cartas, imagens das cartas) passam direto; offline, a busca avisa que não deu.
 // Ao criar um módulo novo em src/, inclua o arquivo em SHELL para ele funcionar offline.
-const CACHE = 'sleevebook-v1';
+const CACHE = 'sleevebook-v2';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'icon.svg',
   'src/css/app.css',
@@ -25,7 +25,9 @@ self.addEventListener('fetch', e => {
   const { request } = e;
   if (request.method !== 'GET' || new URL(request.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(request)
+    // cache: 'no-cache' faz o navegador perguntar ao servidor se o arquivo mudou. Sem isso, o GitHub Pages
+    // (max-age=600) deixaria o navegador usar a cópia antiga por até 10 minutos depois de uma atualização.
+    fetch(request, { cache: 'no-cache' })
       .then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(request, copy)); }
         return res;

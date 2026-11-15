@@ -35,11 +35,11 @@ Legenda: ⬜ a fazer · ✅ pronto
 
 ### v0.1 · MVP
 
-- ⬜ Criar álbum com linhas × colunas e número de páginas
-- ⬜ Folhear em visual de livro (botões, teclado, deslizar)
+- ✅ Criar álbum com linhas × colunas e número de páginas
+- ✅ Folhear em visual de livro (botões, teclado, deslizar)
 - ⬜ Cor do álbum por roda de cores e hexadecimal
 - ⬜ Cadastrar carta por slot (nome, set, número, condição, quantidade, imagem)
-- ⬜ Salvar no navegador, exportar e importar JSON
+- ✅ Salvar no navegador, exportar e importar JSON
 
 ### v0.2 · Cartas de verdade
 

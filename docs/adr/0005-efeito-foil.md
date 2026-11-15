@@ -33,3 +33,10 @@ Queremos que as cartas com versão holo tenham um brilho parecido com o da carta
 - A correção do piscar (acima) teve um efeito colateral que eu não tinha percebido: a carta passou a inclinar **dentro** do slot, que cortava tudo que saía dele (`overflow: hidden`). Por isso a carta parecia quase parada, sem o movimento de "segurar a carta na mão" que existia antes.
 - **Correção**: o slot (alvo do mouse, parado) deixou de cortar (`overflow: visible`) e o corte arredondado foi para o `.card3d`, que se mexe sozinho. Enquanto a carta brilha ela inclina por inteiro (até 14°), cresce 7%, levanta e ganha uma sombra maior, e o slot sobe de camada (`z-index`) para a carta passar por cima das vizinhas. A abertura do bolso continua parada atrás.
 - Os fundos de "carta sem imagem" e "ainda não tenho" também foram para o `.card3d`, para acompanharem o movimento.
+
+## Atualização 3 (2026-11-15): com o mouse de verdade, a carta só levantava
+
+- **Sintoma**: depois das duas correções anteriores, com o mouse sobre a carta ela só subia um pouco, sem girar. O movimento de "carta girando no próprio eixo", parecido com o do Pokémon TCG Pocket, não aparecia.
+- **Causa**: a regra de "levantar ao passar o mouse" (`.slot[data-page].filled:hover .card3d`, 5 seletores) tinha especificidade maior que a regra do foil (`.slot.foiling[data-foil] .card3d`, 4 seletores). Com o `:hover` real, a regra do levantar ganhava e a inclinação era ignorada, embora as variáveis `--rx`/`--ry` estivessem corretas. Nos meus testes anteriores eu simulava a classe `foiling` por JavaScript, sem `:hover` real, então nunca vi isso.
+- **Correção**: a regra do foil passou a ter especificidade maior (`.slot.filled.foiling[data-page][data-foil] .card3d`). Também tirei o aumento de 7% do tamanho: a carta gira no próprio eixo (como antes), sem crescer. O slot sem corte, a sombra maior e o `z-index` continuam.
+- **Como verificar**: sempre com o ponteiro de verdade. Com o mouse em quatro pontos (centro-esquerda, canto superior, canto inferior, bordas), `--rx`/`--ry` mudam com a posição, o `transform` do `.card3d` é `matrix3d` (inclinada) e o foil continua ligado também nas bordas.

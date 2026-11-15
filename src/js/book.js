@@ -47,8 +47,10 @@ export function createBook(stage, handlers = {}) {
     // Tipo de foil: 'holo', 'reverse' ou 'none'. 'unknown' = carta Pokémon salva antes de guardarmos o foil; o app descobre ao passar o mouse.
     const foil = card.foil ?? (card.source === 'pokemon' && card.sourceId ? 'unknown' : 'none');
     return `<div class="slot filled ${card.image ? '' : 'noimg'}${missing ? ' missing' : ''}" ${attrs} data-foil="${foil}" draggable="true" aria-label="${esc(card.name)}${missing ? ' (ainda não tenho)' : ''}">
-      ${card.image ? `<img src="${esc(card.image)}" alt="" loading="lazy" draggable="false">` : `<div class="label">${esc(card.name)}</div>`}
-      <div class="shine"></div></div>`;
+      <div class="card3d">
+        ${card.image ? `<img src="${esc(card.image)}" alt="" loading="lazy" draggable="false">` : `<div class="label">${esc(card.name)}</div>`}
+        <i class="foil"></i><div class="shine"></div>
+      </div></div>`;
   }
 
   function pageHTML(page) {

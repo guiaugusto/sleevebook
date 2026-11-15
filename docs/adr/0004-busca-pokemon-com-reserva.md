@@ -53,3 +53,9 @@ O cadastro preenche a carta a partir de bases públicas. Os três jogos suportad
 ## Atualização 5 (2026-11-15): idioma sempre à vista
 
 O seletor "Idioma da carta" ficava dentro de "Filtros", fechado por padrão, e a busca começava em inglês; quem procurava uma carta japonesa não via por onde mudar. Agora o idioma fica ao lado de "Jogo", sempre visível (só para Pokémon), e depois de cada busca aparece "Não é a carta que procura? Tente em outro idioma:" com um botão por idioma (japonês, coreano, chinês, português, inglês, francês, alemão, espanhol e italiano) que refaz a busca naquele idioma.
+
+## Atualização 6 (2026-11-15): imagem em inglês quando falta no idioma da carta
+
+- Muitas cartas existem no TCGdex em português, coreano etc. **sem imagem** (ex.: Bidoof GG29/70 da Galeria de Galar, em inglês e em português). O Scrydex só tem endereço previsível para inglês e japonês.
+- Para os outros idiomas, quando o TCGdex não traz imagem, o app usa a **imagem em inglês** da mesma carta (mesma arte; o texto da carta é em inglês), se existir no Scrydex, e marca `imageFallback: 'en'`. A busca mostra "· imagem em inglês" no resultado, para não passar a imagem por ser do idioma escolhido. Se nem a imagem em inglês existir, a carta fica sem imagem (dá para colar uma URL ou enviar foto).
+- As miniaturas da busca deixaram de usar `loading="lazy"`: dentro do diálogo, com lista rolável, o navegador demorava a carregá-las e elas pareciam ausentes.

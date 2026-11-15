@@ -56,8 +56,8 @@ export function initSearch({ onPick, getGame, ids = CARD_IDS }) {
   /* ---------- Busca ---------- */
   function render() {
     list.innerHTML = results.map((c, i) => `<button type="button" class="res" data-i="${i}">
-      ${c.image ? `<img src="${esc(c.image)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}
-      <span><b>${esc(c.name)}</b><small>${esc(c.set)} ${esc(c.number)}${c.language && c.language !== 'en' ? ` · ${esc(c.language.toUpperCase())}` : ''}${c.rarity ? ` · ${esc(c.rarity)}` : ''}</small></span></button>`).join('');
+      ${c.image ? `<img src="${esc(c.image)}" alt="" decoding="async">` : '<span class="noimg"></span>'}
+      <span><b>${esc(c.name)}</b><small>${esc(c.set)} ${esc(c.number)}${c.language && c.language !== 'en' ? ` · ${esc(c.language.toUpperCase())}` : ''}${c.rarity ? ` · ${esc(c.rarity)}` : ''}${c.imageFallback === 'en' ? ' · imagem em inglês' : ''}</small></span></button>`).join('');
     if (adv?.more) adv.more.hidden = !(advOn() && lastBatch >= PAGE_SIZE);
   }
 

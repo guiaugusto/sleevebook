@@ -163,8 +163,18 @@ test('Idiomas: Scrydex japonês usa o sufixo _ja', () => {
   eq(scrydexCandidates('S12a-200', 'small', 'ja')[0], 'https://images.scrydex.com/pokemon/s12a_ja-200/small');
   eq(scrydexCandidates('sv05-010', 'small', 'ja')[0], 'https://images.scrydex.com/pokemon/sv5_ja-10/small');
 });
-test('Idiomas: fillMissingImages não procura imagem no Scrydex para idiomas sem endereço conhecido', async () => {
+test('Idiomas: sem imagem no próprio idioma, usa a imagem em inglês e marca imageFallback', async () => {
   const probe = async () => true;
-  const r = await fillMissingImages([{ sourceId: 'A-1', image: '', source: 'pokemon', language: 'ko' }, { sourceId: 'S12a-200', image: '', source: 'pokemon', language: 'ja' }], { probe });
-  eq([r[0].image, r[1].image.includes('s12a_ja-200')], ['', true]);
+  const r = await fillMissingImages([
+    { sourceId: 'swsh12.5gg-GG29', image: '', source: 'pokemon', language: 'pt' },
+    { sourceId: 'S12a-200', image: '', source: 'pokemon', language: 'ja' },
+    { sourceId: 'swsh12.5gg-GG29', image: '', source: 'pokemon', language: 'en' },
+  ], { probe });
+  eq([r[0].image, r[0].imageFallback], ['https://images.scrydex.com/pokemon/swsh12.5gg-GG29/small', 'en']);
+  ok(r[1].image.includes('s12a_ja-200') && !r[1].imageFallback, 'japonês usa a imagem japonesa');
+  ok(r[2].image && !r[2].imageFallback, 'inglês não é "fallback"');
+});
+test('Idiomas: se a imagem em inglês também não existe, a carta fica sem imagem', async () => {
+  const r = await fillMissingImages([{ sourceId: 'X-1', image: '', source: 'pokemon', language: 'ko' }], { probe: async () => false });
+  eq([r[0].image, r[0].imageFallback], ['', undefined]);
 });

@@ -2,7 +2,7 @@
 
 Álbum digital para catalogar sua coleção de cartas TCG. Você define o tamanho do álbum (2×2, 3×3, 4×4…), a quantidade de páginas e a cor, folheia as páginas como num livro e cadastra cada carta no seu slot.
 
-> Status: em desenvolvimento. Veja o andamento em [docs/PLANEJAMENTO.md](docs/PLANEJAMENTO.md).
+> Status: as fases v0.1, v0.2 e v0.3 estão prontas; conta, sincronização, link público e scanner dependem de backend e não foram iniciados. Detalhes e limitações em [docs/PLANEJAMENTO.md](docs/PLANEJAMENTO.md).
 
 ## Funcionalidades
 

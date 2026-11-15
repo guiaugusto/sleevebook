@@ -13,13 +13,12 @@
 <header class="top">
   <h1 id="title">Sleevebook</h1>
   <nav class="tabs" id="tabs" aria-label="Seções">
-    <button type="button" data-view="album" class="on">Álbum</button>
+    <button type="button" data-view="library" class="on">Biblioteca</button>
     <button type="button" data-view="collection">Coleção</button>
     <button type="button" data-view="wishlist">Wishlist</button>
   </nav>
   <span class="tools" id="albumTools">
-    <select id="albumSelect" aria-label="Álbum atual"></select>
-    <button id="btnNew" type="button" title="Criar outro álbum">＋ Novo</button>
+    <button id="btnLibrary" type="button" title="Voltar para a biblioteca (Esc)">← Biblioteca</button>
     <span class="stat" id="stat"></span>
     <button id="btnSettings" type="button">⚙ Configurar</button>
   </span>
@@ -28,7 +27,9 @@
   <input type="file" id="fileImport" accept="application/json" hidden>
 </header>
 
-<section id="viewAlbum" class="view">
+<section id="viewLibrary" class="view scroll" aria-label="Biblioteca de fichários"></section>
+
+<section id="viewAlbum" class="view" hidden>
   <main id="stage" aria-label="Álbum"><div id="book"></div></main>
 
   <nav class="pager" aria-label="Páginas">

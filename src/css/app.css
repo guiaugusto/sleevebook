@@ -260,3 +260,29 @@ dialog#dlgCard[open]{display:flex;flex-direction:column}
   .dfoot button{padding:10px 14px}
   input,select,textarea{font-size:16px}          /* evita o zoom automático do iPhone ao focar */
 }
+
+/* ---- Biblioteca de fichários: prateleira com os álbuns em pé, virados para a frente ---- */
+.shelfwrap{max-width:1180px}
+.libhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.libhead h2{margin:0;font-size:22px}.libhead p{margin:0}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cell,230px),1fr));margin-top:10px}
+.shelfcell{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:34px 12px 40px}
+.shelfcell::before{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;
+  background:linear-gradient(#2c3347,#1a1e2b 55%,#12141b);border-top:1px solid #ffffff2e;box-shadow:0 -6px 18px #0006 inset,0 10px 24px #0008}
+.libcap{position:absolute;left:12px;right:12px;bottom:8px;text-align:center;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.libitem{position:relative;background:none;border:0;padding:0;cursor:pointer;border-radius:10px;z-index:1;transition:transform .2s ease}
+.libitem:hover,.libitem:focus-visible{transform:translateY(-8px)}
+.libitem:focus-visible{outline:2px solid var(--accent);outline-offset:6px}
+.libcover{position:relative;border-radius:calc(9*var(--u,3px))}
+.libcover .face{position:absolute;inset:0}
+.libcover::after{content:"";position:absolute;top:calc(5*var(--u));bottom:calc(5*var(--u));right:calc(-1*var(--thick,5px));width:var(--thick,5px);
+  background:repeating-linear-gradient(90deg,#ececec 0 1px,#b9b9b9 1px 2px);border-radius:0 2px 2px 0;box-shadow:0 2px 6px #0007}
+.libcover .face.front.cover-out{box-shadow:0 10px 22px #000a}
+.libnew .newcover{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:2px dashed #ffffff40;border-radius:14px;
+  color:var(--muted);background:#ffffff08}
+.libnew .newcover span{font-size:34px;line-height:1}
+.libnew:hover .newcover{border-color:var(--accent);color:var(--ink)}
+.libnew .newcover::after{display:none}
+.flying{box-shadow:none}.flying::after{display:none}
+@media(max-width:600px){.shelf{--cell:170px}.shelfcell{padding:28px 8px 38px}}
+@media (prefers-reduced-motion:reduce){.libitem{transition:none}}

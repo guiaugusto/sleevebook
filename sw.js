@@ -2,11 +2,11 @@
 // Arquivos do próprio site: tenta a rede primeiro (para você sempre ver a versão mais nova) e cai no cache se estiver offline.
 // Requisições para outros sites (busca de cartas, imagens das cartas) passam direto; offline, a busca avisa que não deu.
 // Ao criar um módulo novo em src/, inclua o arquivo em SHELL para ele funcionar offline.
-const CACHE = 'sleevebook-v4';
+const CACHE = 'sleevebook-v5';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'icon.svg',
   'src/css/app.css',
-  'src/js/app.js', 'src/js/book.js', 'src/js/cardform.js', 'src/js/collection.js', 'src/js/color.js', 'src/js/grid.js',
+  'src/js/app.js', 'src/js/book.js', 'src/js/cardform.js', 'src/js/collection.js', 'src/js/color.js', 'src/js/grid.js', 'src/js/library.js',
   'src/js/search.js', 'src/js/stats.js', 'src/js/store.js', 'src/js/util.js', 'src/js/wheel.js', 'src/js/wishlist.js',
   'src/js/providers/index.js', 'src/js/providers/pokemon.js', 'src/js/providers/tcgdex.js', 'src/js/providers/images.js', 'src/js/providers/scryfall.js', 'src/js/providers/yugioh.js',
 ];

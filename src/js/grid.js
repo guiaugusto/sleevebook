@@ -104,3 +104,18 @@ export function firstEmptySlot(album, occupied) {
 
 /** Posição legível: "pág. 7 · linha 2, coluna 3" */
 export const describeSlot = s => `pág. ${s.page} · linha ${s.row + 1}, coluna ${s.col + 1}`;
+
+/**
+ * Medidas, em "unidades" (a carta tem 63×88), usadas pelo livro e pela biblioteca de fichários.
+ * Página = grade de cartas + espaços + margem; capa dura = página + 10 de cada lado (cima e baixo) e 10 na borda de fora.
+ */
+export const UNITS = { GAP: 5, PAD: 12, HARD: 10, CARD_W: 63, CARD_H: 88 };
+export function pageUnits(rows, cols) {
+  const { GAP, PAD, CARD_W, CARD_H } = UNITS;
+  return { W: CARD_W * cols + GAP * (cols - 1) + 2 * PAD, H: CARD_H * rows + GAP * (rows - 1) + 2 * PAD };
+}
+/** Proporção (largura ÷ altura) da capa dura de um fichário com essa grade. */
+export function coverRatio(rows, cols) {
+  const { W, H } = pageUnits(rows, cols);
+  return (W + UNITS.HARD) / (H + 2 * UNITS.HARD);
+}

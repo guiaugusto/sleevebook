@@ -57,7 +57,7 @@ Legenda: ⬜ a fazer · ✅ pronto
 
 ### v1.0+ · Conta e compartilhamento
 
-- ⬜ App instalável (PWA) e uso offline
+- ✅ App instalável (PWA) e uso offline
 - ⬜ Login e sincronização entre dispositivos (exige backend)
 - ⬜ Link público para mostrar o álbum (exige backend)
 - ⬜ Scanner de carta pela câmera

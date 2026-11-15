@@ -326,6 +326,11 @@ async function main() {
   if (start) await showView(start);
 }
 
+// Uso offline: registra o service worker (só em http/https).
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
 // Pontos de extensão usados pelos próximos módulos (cadastro de carta etc.).
 export const app = { state, draw, updateStat, reload: loadAlbum, get book() { return book; }, onSlot: null, form: null };
 main();

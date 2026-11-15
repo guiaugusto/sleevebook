@@ -2,6 +2,7 @@
 // Complemento: Pokémon TCG API (https://docs.pokemontcg.io), que preenche imagem e preço que faltarem e traz
 // cartas que o TCGdex não tem. As duas são consultadas ao mesmo tempo (ADR 0004).
 import { search as searchTcgdex, hasFilters, normalizeTcgdex } from './tcgdex.js';
+import { fillMissingImages } from './images.js';
 
 export { normalizeTcgdex };
 
@@ -96,5 +97,8 @@ export async function search(query, { signal, filters = {}, page = 1, lang = 'en
   if (signal?.aborted) throw new DOMException('Busca cancelada', 'AbortError');
   if (a.status === 'rejected' && (b.status === 'rejected' || !simple)) throw a.reason;
   const main = a.value ?? [], extra = b.value ?? [];
-  return mergeResults(main.map(c => fillMissing(c, extra)), extra);
+  const merged = mergeResults(main.map(c => fillMissing(c, extra)), extra);
+  const withImages = await fillMissingImages(merged);
+  if (signal?.aborted) throw new DOMException('Busca cancelada', 'AbortError');
+  return withImages;
 }

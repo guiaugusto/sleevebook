@@ -10,6 +10,8 @@
 <body>
 <header class="top">
   <h1 id="title">Sleevebook</h1>
+  <select id="albumSelect" aria-label="Álbum atual"></select>
+  <button id="btnNew" type="button" title="Criar outro álbum">＋ Novo</button>
   <span class="stat" id="stat"></span>
   <button id="btnSettings" type="button">⚙ Configurar</button>
   <button id="btnExport" type="button">Exportar</button>
@@ -44,8 +46,22 @@
     <label>Cor do álbum</label>
     <div id="colorPicker"></div>
     <div class="actions">
+      <button type="button" class="danger" id="sDelete" style="margin-right:auto">Excluir álbum</button>
       <button type="button" id="sCancel">Cancelar</button>
       <button class="primary" id="sSave" value="save">Aplicar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Excluir álbum -->
+<dialog id="dlgDelete">
+  <form method="dialog">
+    <h2>Excluir álbum?</h2>
+    <p id="delInfo"></p>
+    <p class="hint">Isso apaga o álbum e as cartas cadastradas nele. Exporte um backup antes se quiser guardar.</p>
+    <div class="actions">
+      <button type="button" id="delCancel">Cancelar</button>
+      <button type="button" class="danger" id="delConfirm">Excluir</button>
     </div>
   </form>
 </dialog>

@@ -1,5 +1,5 @@
 import { test, eq } from './run.js';
-import { sanitizeLayout, sheetCount, totalSheets, slotKey, parseSlotKey, inGrid, visiblePages, spreadForPage, countByPage, totalSlots, firstEmptySlot } from '../src/js/grid.js';
+import { sanitizeLayout, sanitizeBinder, sheetsToPages, pagesToSheets, capacity, presetLabel, BINDER_PRESETS, sheetCount, totalSheets, slotKey, parseSlotKey, inGrid, visiblePages, spreadForPage, countByPage, totalSlots, firstEmptySlot } from '../src/js/grid.js';
 
 test('sanitizeLayout limita grade e páginas', () => {
   eq(sanitizeLayout({ rows: 0, cols: 99, pages: '' }), { rows: 1, cols: 6, pages: 1 });
@@ -49,3 +49,21 @@ test('firstEmptySlot acha o primeiro livre e devolve null com álbum cheio', () 
   eq(firstEmptySlot(a, new Set(['a:1:0:0', 'a:1:0:1', 'a:2:0:0', 'a:2:0:1'])), null);
 });
 test('totalSlots', () => { eq(totalSlots({ rows: 3, cols: 3, pages: 20 }), 180); });
+
+/* ---------- Folhas e fichários do mercado ---------- */
+test('folhas ↔ páginas: cada folha tem frente e verso', () => {
+  eq([sheetsToPages(20), pagesToSheets(40), pagesToSheets(15), pagesToSheets(1)], [40, 20, 8, 1]);
+});
+test('sanitizeBinder recebe folhas e devolve páginas, com limites', () => {
+  eq(sanitizeBinder({ rows: 3, cols: 3, sheets: 20 }), { rows: 3, cols: 3, pages: 40 });
+  eq(sanitizeBinder({ rows: 0, cols: 99, sheets: 9999 }), { rows: 1, cols: 6, pages: 500 });
+  eq(sanitizeBinder({ rows: 2, cols: 2, sheets: '' }).pages, 2);
+});
+test('presets do mercado: capacidade = bolsos × 2 lados × folhas', () => {
+  const cap = id => { const p = BINDER_PRESETS.find(x => x.id === id); return capacity({ rows: p.rows, cols: p.cols, pages: sheetsToPages(p.sheets) }); };
+  eq([cap('4x20'), cap('9x20'), cap('9x40'), cap('12x20')], [160, 360, 720, 480]);
+});
+test('presets: bolsos batem com a grade e o rótulo mostra tudo', () => {
+  for (const p of BINDER_PRESETS) eq(p.rows * p.cols, p.pockets, p.id);
+  eq(presetLabel(BINDER_PRESETS.find(p => p.id === '9x20')), '9 bolsos (3×3) · 20 folhas · 360 cartas');
+});

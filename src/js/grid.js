@@ -2,13 +2,31 @@
 
 export const MAX_GRID = 6;
 export const MAX_PAGES = 500;
-export const PRESETS = [
-  { rows: 2, cols: 2, pages: 20 },
-  { rows: 3, cols: 3, pages: 20 },
-  { rows: 3, cols: 3, pages: 30 },
-  { rows: 4, cols: 3, pages: 25 },
-  { rows: 4, cols: 4, pages: 15 },
+export const MAX_SHEETS = MAX_PAGES / 2;
+
+/**
+ * Tamanhos de fichário vendidos no mercado. "Folha" é a folha física de plástico, com bolsos dos dois lados
+ * (frente e verso); a "página" do app é cada lado. Então um fichário de 9 bolsos com 20 folhas guarda
+ * 9 × 2 × 20 = 360 cartas. Capacidades conferidas em fichários da Ultra PRO e no fichário oficial do Pokémon TCG
+ * (9 bolsos, 20 folhas, 360 cartas; vendido no Brasil com folhas extras até 40) e em fichários de 12 bolsos
+ * (20 folhas, 480 cartas) e de 4 bolsos (20 folhas, cerca de 160 cartas). Ver ADR 0006.
+ */
+export const BINDER_PRESETS = [
+  { id: '4x20', pockets: 4, rows: 2, cols: 2, sheets: 20, note: 'compacto' },
+  { id: '9x20', pockets: 9, rows: 3, cols: 3, sheets: 20, note: 'o mais comum; fichário oficial do Pokémon TCG' },
+  { id: '9x40', pockets: 9, rows: 3, cols: 3, sheets: 40, note: 'com folhas extras (limite de muitos fichários)' },
+  { id: '12x20', pockets: 12, rows: 4, cols: 3, sheets: 20, note: 'maior; bom para jogos de 4 cópias' },
 ];
+
+/** Páginas (lados) de um fichário com `sheets` folhas. */
+export const sheetsToPages = sheets => sheets * 2;
+/** Folhas necessárias para `pages` páginas (arredonda para cima). */
+export const pagesToSheets = pages => Math.ceil(pages / 2);
+/** Quantas cartas cabem: bolsos por página × páginas. */
+export const capacity = ({ rows, cols, pages }) => rows * cols * pages;
+
+/** Texto curto de um preset: "9 bolsos (3×3) · 20 folhas · 360 cartas". */
+export const presetLabel = p => `${p.pockets} bolsos (${p.cols}×${p.rows}) · ${p.sheets} folhas · ${capacity({ rows: p.rows, cols: p.cols, pages: sheetsToPages(p.sheets) })} cartas`;
 
 export function clamp(value, min, max) {
   let v = parseInt(value, 10);
@@ -19,6 +37,11 @@ export function clamp(value, min, max) {
 /** Aplica limites a rows/cols/pages vindos de formulário. */
 export function sanitizeLayout({ rows, cols, pages }) {
   return { rows: clamp(rows, 1, MAX_GRID), cols: clamp(cols, 1, MAX_GRID), pages: clamp(pages, 1, MAX_PAGES) };
+}
+
+/** Igual a `sanitizeLayout`, mas recebendo FOLHAS (frente e verso) e devolvendo as páginas. */
+export function sanitizeBinder({ rows, cols, sheets }) {
+  return sanitizeLayout({ rows, cols, pages: sheetsToPages(clamp(sheets, 1, MAX_SHEETS)) });
 }
 
 /** Folhas de páginas: cada folha tem duas páginas (frente e verso). */

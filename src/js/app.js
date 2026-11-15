@@ -2,7 +2,7 @@
 import { db, meta, exportAll, importAll, validateExport } from './store.js';
 import { createBook } from './book.js';
 import { applyTheme, DEFAULT_COLOR, SWATCHES as SWATCH_CYCLE } from './color.js';
-import { PRESETS, sanitizeLayout, slotsInGrid, totalSlots, totalSheets, parseSlotKey } from './grid.js';
+import { BINDER_PRESETS, presetLabel, sanitizeBinder, pagesToSheets, slotsInGrid, totalSlots, totalSheets, parseSlotKey } from './grid.js';
 import { createColorPicker } from './wheel.js';
 import { initCardForm } from './cardform.js';
 import { initSearch } from './search.js';
@@ -19,7 +19,7 @@ let book;
 
 /* ---------- Dados ---------- */
 function newAlbum(over = {}) {
-  return { id: uid(), name: 'Meu Álbum', game: 'pokemon', rows: 3, cols: 3, pages: 20, color: DEFAULT_COLOR, createdAt: Date.now(), ...over };
+  return { id: uid(), name: 'Meu Álbum', game: 'pokemon', rows: 3, cols: 3, pages: 40, color: DEFAULT_COLOR, createdAt: Date.now(), ...over };
 }
 
 /** Carrega os álbuns e o álbum indicado (ou o último aberto, ou o primeiro). Cria um se não houver nenhum. */
@@ -86,7 +86,7 @@ function cardCounts(slotList) {
 function updateStat() {
   const a = state.album;
   const { owned, wanted } = cardCounts(slotsInGrid(a, [...state.slots.values()]));
-  $('#stat').textContent = `${owned}/${totalSlots(a)} cartas${wanted ? ` · ${wanted} faltam` : ''} · ${a.rows}×${a.cols} · ${a.pages} págs.`;
+  $('#stat').textContent = `${owned}/${totalSlots(a)} cartas${wanted ? ` · ${wanted} faltam` : ''} · ${a.rows}×${a.cols} · ${pagesToSheets(a.pages)} folhas`;
   renderPos();
 }
 
@@ -152,23 +152,24 @@ function wireNav() {
 
 /* ---------- Configurar álbum ---------- */
 function updateSetInfo() {
-  const draft = sanitizeLayout({ rows: $('#sRows').value, cols: $('#sCols').value, pages: $('#sPages').value });
+  const draft = sanitizeBinder({ rows: $('#sRows').value, cols: $('#sCols').value, sheets: $('#sSheets').value });
   const all = [...state.slots.values()];
   const hidden = all.length - slotsInGrid({ ...state.album, ...draft }, all).length;
-  $('#sInfo').textContent = `${draft.rows}×${draft.cols} = ${draft.rows * draft.cols} slots por página · ${totalSlots(draft)} no total.` +
+  const pockets = draft.rows * draft.cols;
+  $('#sInfo').textContent = `${pockets} bolsos por página · ${pagesToSheets(draft.pages)} folhas, ${draft.pages} páginas (frente e verso) · cabem ${totalSlots(draft)} cartas.` +
     (hidden ? ` ${hidden} carta(s) ficarão fora da grade, mas continuam guardadas e voltam se você aumentar o álbum.` : '');
 }
 
 function wireSettings() {
   $('#sGame').innerHTML = Object.entries(GAMES).map(([k, g]) => `<option value="${k}">${g.label}</option>`).join('');
-  $('#presets').innerHTML = PRESETS.map(p => `<button type="button" data-p="${p.rows},${p.cols},${p.pages}">${p.rows}×${p.cols} · ${p.pages} págs.</button>`).join('');
+  $('#presets').innerHTML = BINDER_PRESETS.map(p => `<button type="button" data-p="${p.rows},${p.cols},${p.sheets}" title="${p.note}">${presetLabel(p)}</button>`).join('');
   $('#presets').onclick = e => {
     const b = e.target.closest('button');
     if (!b) return;
-    [$('#sRows').value, $('#sCols').value, $('#sPages').value] = b.dataset.p.split(',');
+    [$('#sRows').value, $('#sCols').value, $('#sSheets').value] = b.dataset.p.split(',');
     updateSetInfo();
   };
-  ['#sRows', '#sCols', '#sPages'].forEach(s => $(s).addEventListener('input', updateSetInfo));
+  ['#sRows', '#sCols', '#sSheets'].forEach(s => $(s).addEventListener('input', updateSetInfo));
   // A cor aparece no álbum enquanto você escolhe; se cancelar, volta à cor salva.
   let draftColor = state.album?.color || DEFAULT_COLOR, saved = false;
   const picker = createColorPicker($('#colorPicker'), {
@@ -176,7 +177,7 @@ function wireSettings() {
   });
   $('#btnSettings').onclick = () => {
     const a = state.album;
-    $('#sName').value = a.name; $('#sGame').value = a.game || 'pokemon'; $('#sRows').value = a.rows; $('#sCols').value = a.cols; $('#sPages').value = a.pages;
+    $('#sName').value = a.name; $('#sGame').value = a.game || 'pokemon'; $('#sRows').value = a.rows; $('#sCols').value = a.cols; $('#sSheets').value = pagesToSheets(a.pages);
     draftColor = a.color; saved = false;
     $('#sFoil').checked = foilEnabled();
     picker.set(a.color);
@@ -189,7 +190,7 @@ function wireSettings() {
     if (e.submitter?.id !== 'sSave') return;
     saved = true;
     setFoilEnabled($('#sFoil').checked);
-    const layout = sanitizeLayout({ rows: $('#sRows').value, cols: $('#sCols').value, pages: $('#sPages').value });
+    const layout = sanitizeBinder({ rows: $('#sRows').value, cols: $('#sCols').value, sheets: $('#sSheets').value });
     state.album = { ...state.album, name: $('#sName').value.trim() || 'Meu Álbum', game: $('#sGame').value, color: draftColor, ...layout };
     await db.put('albums', state.album);
     state.albums = state.albums.map(a => (a.id === state.album.id ? state.album : a));
